@@ -117,7 +117,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       return AMapLoader.load({
         key,
         version: "2.0",
-        plugins: ["AMap.MarkerCluster"],
+        plugins: [],
       });
     })
       .then((AMap: AMapNS) => {
@@ -166,6 +166,18 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     currentStyleRef.current = newStyle;
     mapInstance.setMapStyle(newStyle);
   }, [mapInstance, resolvedTheme, mapStyles]);
+
+  // Sync center changes
+  useEffect(() => {
+    if (!mapInstance) return;
+    mapInstance.panTo(center);
+  }, [mapInstance, center]);
+
+  // Sync zoom changes
+  useEffect(() => {
+    if (!mapInstance) return;
+    mapInstance.setZoom(zoom);
+  }, [mapInstance, zoom]);
 
   const contextValue = useMemo(
     () => ({ map: mapInstance, AMap: amapNS, isLoaded }),
@@ -226,6 +238,16 @@ function MapMarker({
   const { map, AMap } = useMap();
   const containerEl = useMemo(() => document.createElement("div"), []);
 
+  // Keep latest callbacks in refs to avoid stale closures
+  const onClickRef = useRef(onClick);
+  const onMouseEnterRef = useRef(onMouseEnter);
+  const onMouseLeaveRef = useRef(onMouseLeave);
+  const onDragEndRef = useRef(onDragEnd);
+  onClickRef.current = onClick;
+  onMouseEnterRef.current = onMouseEnter;
+  onMouseLeaveRef.current = onMouseLeave;
+  onDragEndRef.current = onDragEnd;
+
   const marker = useMemo(() => {
     if (!AMap) return null;
     return new AMap.Marker({
@@ -241,33 +263,37 @@ function MapMarker({
     if (!map || !marker) return;
     marker.addTo(map);
 
-    const handleClick = () => onClick?.();
-    const handleMouseOver = () => onMouseEnter?.();
-    const handleMouseOut = () => onMouseLeave?.();
+    const handleClick = () => onClickRef.current?.();
+    const handleMouseOver = () => onMouseEnterRef.current?.();
+    const handleMouseOut = () => onMouseLeaveRef.current?.();
     const handleDragEnd = () => {
       const pos = marker.getPosition();
-      onDragEnd?.({ lng: pos.getLng(), lat: pos.getLat() });
+      onDragEndRef.current?.({ lng: pos.getLng(), lat: pos.getLat() });
     };
 
     marker.on("click", handleClick);
     marker.on("mouseover", handleMouseOver);
     marker.on("mouseout", handleMouseOut);
-    if (draggable) marker.on("dragend", handleDragEnd);
+    marker.on("dragend", handleDragEnd);
 
     return () => {
       marker.off("click", handleClick);
       marker.off("mouseover", handleMouseOver);
       marker.off("mouseout", handleMouseOut);
-      if (draggable) marker.off("dragend", handleDragEnd);
+      marker.off("dragend", handleDragEnd);
       marker.setMap(null);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, marker]);
 
   useEffect(() => {
     if (!marker) return;
     marker.setPosition([longitude, latitude]);
   }, [marker, longitude, latitude]);
+
+  useEffect(() => {
+    if (!marker) return;
+    marker.setDraggable(draggable);
+  }, [marker, draggable]);
 
   if (!marker) return null;
 
@@ -497,7 +523,6 @@ function MapPopup({
 
   const handleClose = () => {
     infoWindowRef.current?.close();
-    onClose?.();
   };
 
   return createPortal(
@@ -604,25 +629,27 @@ function MapControls({
   }, [map]);
 
   const handleLocate = useCallback(() => {
-    setWaitingForLocation(true);
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const coords = {
-            longitude: pos.coords.longitude,
-            latitude: pos.coords.latitude,
-          };
-          map?.panTo([coords.longitude, coords.latitude]);
-          map?.setZoom(14);
-          onLocate?.(coords);
-          setWaitingForLocation(false);
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          setWaitingForLocation(false);
-        }
-      );
+    if (!("geolocation" in navigator)) {
+      setWaitingForLocation(false);
+      return;
     }
+    setWaitingForLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords = {
+          longitude: pos.coords.longitude,
+          latitude: pos.coords.latitude,
+        };
+        map?.panTo([coords.longitude, coords.latitude]);
+        map?.setZoom(14);
+        onLocate?.(coords);
+        setWaitingForLocation(false);
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        setWaitingForLocation(false);
+      }
+    );
   }, [map, onLocate]);
 
   const handleFullscreen = useCallback(() => {
@@ -692,7 +719,6 @@ function MapControls({
 // ---- MapRoute (Polyline) ----
 
 type MapRouteProps = {
-  id?: string;
   coordinates: [number, number][];
   color?: string;
   width?: number;
@@ -710,6 +736,10 @@ function MapRoute({
   const { map, AMap, isLoaded } = useMap();
   const polylineRef = useRef<AMapInstance>(null);
 
+  // Keep latest onClick in a ref to avoid stale closures
+  const onClickRef = useRef(onClick);
+  onClickRef.current = onClick;
+
   useEffect(() => {
     if (!isLoaded || !map || !AMap || coordinates.length < 2) return;
 
@@ -725,19 +755,24 @@ function MapRoute({
     polyline.addTo(map);
     polylineRef.current = polyline;
 
-    if (onClick) {
-      polyline.on("click", onClick);
-    }
+    const handleClick = () => onClickRef.current?.();
+    polyline.on("click", handleClick);
 
     return () => {
-      if (onClick) polyline.off("click", onClick);
+      polyline.off("click", handleClick);
       polyline.setMap(null);
+      polylineRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, map, AMap]);
 
   useEffect(() => {
-    if (!polylineRef.current || coordinates.length < 2) return;
+    if (!polylineRef.current) return;
+    if (coordinates.length < 2) {
+      polylineRef.current.setMap(null);
+      polylineRef.current = null;
+      return;
+    }
     polylineRef.current.setPath(coordinates);
   }, [coordinates]);
 
@@ -781,6 +816,8 @@ function MapClusterLayer<
   useEffect(() => {
     if (!isLoaded || !map || !AMap) return;
 
+    let cancelled = false;
+
     const resolveData = async () => {
       let geojson: GeoJSON.FeatureCollection<GeoJSON.Point, P>;
       if (typeof data === "string") {
@@ -790,64 +827,71 @@ function MapClusterLayer<
         geojson = data;
       }
 
-      const points = geojson.features.map((f) => ({
-        lnglat: f.geometry.coordinates as [number, number],
-        extData: f,
-      }));
+      if (cancelled) return;
 
-      const cluster = new AMap.MarkerCluster(map, points, {
-        gridSize: 60,
-        renderClusterMarker: (ctx: AMapInstance) => {
-          const count = ctx.count;
-          const color =
-            count > 750
-              ? clusterColors[2]
-              : count > 100
-              ? clusterColors[1]
-              : clusterColors[0];
-          const size = count > 750 ? 40 : count > 100 ? 30 : 20;
-          const div = document.createElement("div");
-          div.style.cssText = `
-            width:${size}px;height:${size}px;border-radius:50%;
-            background:${color};display:flex;align-items:center;
-            justify-content:center;color:#fff;font-size:12px;font-weight:600;
-          `;
-          div.textContent = String(count);
-          ctx.marker.setContent(div);
-          ctx.marker.setOffset(new AMap.Pixel(-size / 2, -size / 2));
-        },
-        renderMarker: (ctx: AMapInstance) => {
-          const div = document.createElement("div");
-          div.style.cssText = `
-            width:12px;height:12px;border-radius:50%;
-            background:${pointColor};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);
-            cursor:pointer;
-          `;
-          ctx.marker.setContent(div);
-          ctx.marker.setOffset(new AMap.Pixel(-6, -6));
+      AMap.plugin(["AMap.MarkerCluster"], () => {
+        if (cancelled) return;
 
-          if (onPointClick) {
-            ctx.marker.on("click", () => {
-              const feature = ctx.data.extData as GeoJSON.Feature<GeoJSON.Point, P>;
-              onPointClick(feature, feature.geometry.coordinates as [number, number]);
-            });
-          }
-        },
+        const points = geojson.features.map((f) => ({
+          lnglat: f.geometry.coordinates as [number, number],
+          extData: f,
+        }));
+
+        const cluster = new AMap.MarkerCluster(map, points, {
+          gridSize: 60,
+          renderClusterMarker: (ctx: AMapInstance) => {
+            const count = ctx.count;
+            const color =
+              count > 750
+                ? clusterColors[2]
+                : count > 100
+                ? clusterColors[1]
+                : clusterColors[0];
+            const size = count > 750 ? 40 : count > 100 ? 30 : 20;
+            const div = document.createElement("div");
+            div.style.cssText = `
+              width:${size}px;height:${size}px;border-radius:50%;
+              background:${color};display:flex;align-items:center;
+              justify-content:center;color:#fff;font-size:12px;font-weight:600;
+            `;
+            div.textContent = String(count);
+            ctx.marker.setContent(div);
+            ctx.marker.setOffset(new AMap.Pixel(-size / 2, -size / 2));
+          },
+          renderMarker: (ctx: AMapInstance) => {
+            const div = document.createElement("div");
+            div.style.cssText = `
+              width:12px;height:12px;border-radius:50%;
+              background:${pointColor};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);
+              cursor:pointer;
+            `;
+            ctx.marker.setContent(div);
+            ctx.marker.setOffset(new AMap.Pixel(-6, -6));
+
+            if (onPointClick) {
+              ctx.marker.on("click", () => {
+                const feature = ctx.data.extData as GeoJSON.Feature<GeoJSON.Point, P>;
+                onPointClick(feature, feature.geometry.coordinates as [number, number]);
+              });
+            }
+          },
+        });
+
+        clusterRef.current = cluster;
       });
-
-      clusterRef.current = cluster;
     };
 
     resolveData().catch(console.error);
 
     return () => {
+      cancelled = true;
       if (clusterRef.current) {
         clusterRef.current.setMap(null);
         clusterRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, map, AMap]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, map, AMap, data, clusterColors, pointColor, onPointClick]);
 
   return null;
 }

@@ -219,30 +219,18 @@ export default function ApiReferencePage() {
             },
             {
               name: "onClick",
-              type: "(e: MouseEvent) => void",
+              type: "() => void",
               description: "Callback when marker is clicked.",
             },
             {
               name: "onMouseEnter",
-              type: "(e: MouseEvent) => void",
+              type: "() => void",
               description: "Callback when mouse enters marker.",
             },
             {
               name: "onMouseLeave",
-              type: "(e: MouseEvent) => void",
+              type: "() => void",
               description: "Callback when mouse leaves marker.",
-            },
-            {
-              name: "onDragStart",
-              type: "(lngLat: {lng, lat}) => void",
-              description:
-                "Callback when marker drag starts (requires draggable: true).",
-            },
-            {
-              name: "onDrag",
-              type: "(lngLat: {lng, lat}) => void",
-              description:
-                "Callback during marker drag (requires draggable: true).",
             },
             {
               name: "onDragEnd",
@@ -457,18 +445,10 @@ export default function ApiReferencePage() {
       <DocsSection title="MapRoute">
         <p>
           Renders a line/route on the map connecting coordinate points. Must be
-          used inside <DocsCode>Map</DocsCode>. Supports click and hover
-          interactions for building route selection UIs.
+          used inside <DocsCode>Map</DocsCode>.
         </p>
         <DocsPropTable
           props={[
-            {
-              name: "id",
-              type: "string",
-              default: "undefined (auto-generated)",
-              description:
-                "Optional unique identifier for the route layer. Auto-generated if not provided.",
-            },
             {
               name: "coordinates",
               type: "[number, number][]",
@@ -493,32 +473,9 @@ export default function ApiReferencePage() {
               description: "Line opacity (0 to 1).",
             },
             {
-              name: "dashArray",
-              type: "[number, number]",
-              description:
-                "Dash pattern [dash length, gap length] for dashed lines.",
-            },
-            {
               name: "onClick",
               type: "() => void",
               description: "Callback when the route line is clicked.",
-            },
-            {
-              name: "onMouseEnter",
-              type: "() => void",
-              description: "Callback when mouse enters the route line.",
-            },
-            {
-              name: "onMouseLeave",
-              type: "() => void",
-              description: "Callback when mouse leaves the route line.",
-            },
-            {
-              name: "interactive",
-              type: "boolean",
-              default: "true",
-              description:
-                "Whether the route is interactive (shows pointer cursor on hover).",
             },
           ]}
         />
@@ -542,31 +499,11 @@ export default function ApiReferencePage() {
                 "GeoJSON FeatureCollection data or URL to fetch GeoJSON from.",
             },
             {
-              name: "clusterMaxZoom",
-              type: "number",
-              default: "14",
-              description: "Maximum zoom level to cluster points on.",
-            },
-            {
-              name: "clusterRadius",
-              type: "number",
-              default: "50",
-              description:
-                "Radius of each cluster when clustering points (in pixels).",
-            },
-            {
               name: "clusterColors",
               type: "[string, string, string]",
               default: '["#51bbd6", "#f1f075", "#f28cb1"]',
               description:
                 "Colors for cluster circles: [small, medium, large] based on point count.",
-            },
-            {
-              name: "clusterThresholds",
-              type: "[number, number]",
-              default: "[100, 750]",
-              description:
-                "Point count thresholds for color/size steps: [medium, large].",
             },
             {
               name: "pointColor",
@@ -578,12 +515,6 @@ export default function ApiReferencePage() {
               name: "onPointClick",
               type: "(feature: GeoJSON.Feature, coordinates: [number, number]) => void",
               description: "Callback when an unclustered point is clicked.",
-            },
-            {
-              name: "onClusterClick",
-              type: "(clusterId: number, coordinates: [number, number], pointCount: number) => void",
-              description:
-                "Callback when a cluster is clicked. If not provided, zooms into the cluster.",
             },
           ]}
         />

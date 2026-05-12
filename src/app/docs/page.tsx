@@ -83,7 +83,8 @@ export default function IntroductionPage() {
         <ul>
           <li>
             <strong className="text-foreground">One Command:</strong> Run the
-            install, get a working map. No config files, no API keys, no setup.
+            install, get a working map. Just add your AMap API key — no complex
+            config or wrapper libraries.
           </li>
           <li>
             <strong className="text-foreground">Own Your Code:</strong> Copy the
