@@ -23,7 +23,7 @@ export function DocsSidebar() {
 
   return (
     <Sidebar
-      className="sticky top-16 h-[calc(100svh-9.5rem)] border-none bg-transparent **:data-[sidebar=sidebar]:bg-transparent"
+      className="sticky top-16 h-[calc(100svh-9.5rem)] border-none bg-transparent [&_[data-sidebar=sidebar]]:bg-transparent"
       style={
         {
           "--sidebar-width": "12rem",
@@ -43,7 +43,7 @@ export function DocsSidebar() {
                     <SidebarMenuButton
                       asChild
                       isActive={pathname === item.href}
-                      className="data-[active=true]:bg-accent data-[active=true]:border-accent 3xl:fixed:w-full 3xl:fixed:max-w-48 relative h-[30px] overflow-visible border border-transparent text-[0.8rem] text-muted-foreground font-medium after:absolute after:inset-x-0 after:-inset-y-1 after:z-0 after:rounded-md"
+                      className="data-[active=true]:bg-accent data-[active=true]:border-accent relative h-[30px] overflow-visible border border-transparent text-[0.8rem] text-muted-foreground font-medium after:absolute after:inset-x-0 after:-inset-y-1 after:z-0 after:rounded-md"
                     >
                       <Link
                         href={item.href}
