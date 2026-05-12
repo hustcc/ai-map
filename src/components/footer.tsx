@@ -18,6 +18,18 @@ export function Footer() {
               hustcc
             </a>
           </span>
+          <span className="text-border">•</span>
+          <span>
+            Inspired by{" "}
+            <a
+              href="https://github.com/AnmolSaini16/mapcn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-foreground hover:underline underline-offset-4"
+            >
+              mapcn
+            </a>
+          </span>
         </div>
         <div className="flex items-center gap-6">
           <Link
