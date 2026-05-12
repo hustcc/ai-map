@@ -7,7 +7,7 @@ const features = [
     icon: Zap,
     title: "Zero Config",
     description:
-      "Works out of the box with free map tiles. No API keys needed.",
+      "Get started quickly with your AMap API key and a simple install command.",
   },
   {
     icon: Moon,
@@ -129,8 +129,8 @@ export default function IntroductionPage() {
       <DocsSection title="Any Map Style">
         <p>
           ai-map works with any{" "}
-          <DocsLink href="https://lbs.amap.com/maplibre-style-spec/" external>
-            AMap-compatible tiles
+          <DocsLink href="https://lbs.amap.com/api/jsapi-v2/guide/map/map-style" external>
+            AMap-compatible styles
           </DocsLink>
           . This means you can use tiles from virtually any provider:
         </p>

@@ -78,9 +78,12 @@ export default function InstallationPage() {
       </DocsSection>
 
       <DocsNote>
-        <strong>Note:</strong> The map uses free CARTO basemap tiles by default.
-        No API key required. Tiles automatically switch between light and dark
-        themes.
+        <strong>Note:</strong> AMap requires a valid API key (
+        <code>NEXT_PUBLIC_AMAP_KEY</code>). Get your key at{" "}
+        <a href="https://lbs.amap.com/" className="underline" target="_blank" rel="noreferrer">
+          lbs.amap.com
+        </a>
+        . Map styles automatically switch between light and dark themes.
       </DocsNote>
     </DocsLayout>
   );

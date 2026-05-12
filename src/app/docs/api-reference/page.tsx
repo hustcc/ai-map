@@ -483,7 +483,7 @@ export default function ApiReferencePage() {
             {
               name: "width",
               type: "number",
-              default: "3",
+              default: "4",
               description: "Line width in pixels.",
             },
             {
