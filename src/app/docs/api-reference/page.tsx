@@ -103,15 +103,9 @@ export default function ApiReferencePage() {
             },
             {
               name: "styles",
-              type: "{ light?: string | StyleSpecification; dark?: string | StyleSpecification }",
+              type: "{ light?: string; dark?: string }",
               description:
-                "Custom map styles for light and dark themes. Overrides the default Carto base map tiles.",
-            },
-            {
-              name: "projection",
-              type: "ProjectionSpecification",
-              description:
-                'Map projection type. Use { type: "globe" } for 3D globe view.',
+                "Custom AMap style URLs for light and dark themes. Overrides the default AMap styles (e.g. amap://styles/normal).",
             },
           ]}
         />

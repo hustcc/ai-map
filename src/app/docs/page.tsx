@@ -49,7 +49,7 @@ export default function IntroductionPage() {
       next={{ title: "Installation", href: "/docs/installation" }}
       toc={[
         { title: "Why ai-map?", slug: "why-ai-map" },
-        { title: "Why AMap Directly?", slug: "why-maplibre-directly" },
+        { title: "Why AMap Directly?", slug: "why-amap-directly" },
         { title: "Any Map Style", slug: "any-map-style" },
         { title: "Features", slug: "features" },
       ]}

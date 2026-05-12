@@ -98,7 +98,7 @@ export default function AdvancedPage() {
       <DocsNote>
         <strong>Tip:</strong> Check the{" "}
         <DocsLink
-          href="https://maplibre.org/maplibre-gl-js/docs/API/classes/Map/"
+          href="https://lbs.amap.com/api/jsapi-v2/summary/"
           external
         >
           AMap JS API JS documentation
