@@ -1,14 +1,15 @@
 <h1 align="center">ai-map</h1>
 
 <p align="center">
-  Free & open-source, ready-to-use, customizable map components for React.<br/>
+  Free & open-source, ready-to-use, customizable map components for React.
+<br/>
   Zero config. One command setup. Built on <a href="https://lbs.amap.com/">AMap (高德地图)</a>, styled with <a href="https://tailwindcss.com/">Tailwind</a>, works seamlessly with <a href="https://ui.shadcn.com/">shadcn/ui</a>.
 </p>
 
 <p align="center">
-  <a href="https://ai-map.dev/docs">Get Started</a> ·
-  <a href="https://ai-map.dev/docs/installation">Installation</a> ·
-  <a href="https://ai-map.dev/docs/basic-map">Components</a>
+  <a href="https://map.ling.pub/docs">Get Started</a> ·
+  <a href="https://map.ling.pub/docs/installation">Installation</a> ·
+  <a href="https://map.ling.pub/docs/basic-map">Components</a>
 </p>
 
 ## Features
@@ -42,18 +43,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see the [LICENSE](LICENSE) file for details. 
 
-## Star History
-
-<a href="https://www.star-history.com/#hustcc/ai-map&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=hustcc/ai-map&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=hustcc/ai-map&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=hustcc/ai-map&type=date&legend=top-left" />
- </picture>
-</a>
-
-## Acknowledgments
-
-- [mapcn](https://github.com/AnmolSaini16/mapcn) — Inspired by mapcn's excellent design, component patterns, and documentation structure. ai-map follows a similar approach adapted for AMap and the China mapping ecosystem.
+Inspired by <a href="https://github.com/AnmolSaini16/mapcn">mapcn</a>'s excellent design, component patterns, and documentation structure. ai-map follows a similar approach adapted for AMap and the China mapping ecosystem.
