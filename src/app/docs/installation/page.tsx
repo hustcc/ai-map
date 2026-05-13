@@ -39,7 +39,7 @@ export default function InstallationPage() {
   return (
     <DocsLayout
       title="Installation"
-      description="How to install and set up ai-map in your project."
+      description="How to install and set up amapcn in your project."
       prev={{ title: "Introduction", href: "/docs" }}
       next={{ title: "API Reference", href: "/docs/api-reference" }}
       toc={[

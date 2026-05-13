@@ -1,4 +1,4 @@
-<h1 align="center">🗺️ ai-map for China! 🇨🇳</h1>
+<h1 align="center">🗺️ amapcn for China! 🇨🇳</h1>
 
 Beautiful maps for China, made simple. Free & open-source, ready-to-use, customizable map components for React.
 
@@ -11,12 +11,12 @@ Zero config. One command setup. Built on <a href="https://lbs.amap.com/">AMap (�
 </p>
 
 <p align="center">
-  <img width="1024" alt="ai-map" src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*KpQ6TY5Y1OIAAAAAgBAAAAgAemJ7AQ/fmt.avif" />
+  <img width="1024" alt="amapcn" src="https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*KpQ6TY5Y1OIAAAAAgBAAAAgAemJ7AQ/fmt.avif" />
 </p>
 
 ## 🧩 Using with shadcn/ui
 
-Add ai-map components to your project using the [shadcn/ui](https://ui.shadcn.com/) CLI:
+Add amapcn components to your project using the [shadcn/ui](https://ui.shadcn.com/) CLI:
 
 ```bash
 npx shadcn@latest add https://map.ling.pub/map.json
@@ -55,4 +55,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 MIT License - see the [LICENSE](LICENSE) file for details. 
 
-Inspired by <a href="https://github.com/AnmolSaini16/mapcn">mapcn</a>'s excellent design, component patterns, and documentation structure. ai-map follows a similar approach adapted for AMap and the China mapping ecosystem.
+Inspired by <a href="https://github.com/AnmolSaini16/mapcn">mapcn</a>'s excellent design, component patterns, and documentation structure. amapcn follows a similar approach adapted for AMap and the China mapping ecosystem.

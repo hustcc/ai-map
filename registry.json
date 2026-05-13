@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "name": "ai-map",
-  "homepage": "https://github.com/hustcc/ai-map",
+  "name": "amapcn",
+  "homepage": "https://github.com/hustcc/amapcn",
   "items": [
     {
       "name": "map",
