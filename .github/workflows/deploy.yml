@@ -27,8 +27,6 @@ jobs:
 
       - name: Build
         run: npm run build
-        env:
-          NEXT_PUBLIC_AMAP_KEY: ${{ secrets.NEXT_PUBLIC_AMAP_KEY }}
 
       - name: Write CNAME
         run: echo "map.ling.pub" > out/CNAME

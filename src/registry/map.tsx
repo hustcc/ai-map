@@ -108,9 +108,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     if (!containerRef.current) return;
 
     const key =
-      amapKey ??
-      process.env.NEXT_PUBLIC_AMAP_KEY ??
-      "";
+      amapKey ?? "f59bcf249433f8b05caaee19f349b3d7";
 
     let map: AMapInstance = null;
 
