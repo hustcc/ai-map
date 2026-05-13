@@ -19,7 +19,7 @@ Zero config. One command setup. Built on <a href="https://lbs.amap.com/">AMap (é
 Add amapcn components to your project using the [shadcn/ui](https://ui.shadcn.com/) CLI:
 
 ```bash
-npx shadcn@latest add https://map.ling.pub/map.json
+npx shadcn@latest add https://map.ling.pub/amap.json
 ```
 
 ## âœ¨ Features

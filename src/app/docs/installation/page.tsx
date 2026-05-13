@@ -12,7 +12,7 @@ import { Map, MapControls } from "@/registry/map";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://map.ling.pub";
 
-const installCode = `npx shadcn@latest add ${siteUrl}/map.json`;
+const installCode = `npx shadcn@latest add ${siteUrl}/amap.json`;
 
 const usageCode = `import { Map, MapControls } from "@/components/ui/map";
 import { Card } from "@/components/ui/card";
