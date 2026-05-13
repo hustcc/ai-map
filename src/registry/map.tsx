@@ -30,7 +30,8 @@ declare global {
 
 const defaultStyles = {
   dark: "amap://styles/dark",
-  light: "amap://styles/normal",
+  light: "amap://styles/light",
+  normal: "amap://styles/normal",
 };
 
 type MapContextValue = {
@@ -128,7 +129,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
         currentStyleRef.current = initialStyle;
 
         map = new AMap.Map(containerRef.current, {
-          viewMode: "2D",
+          viewMode: "3D",
           zoom,
           center,
           mapStyle: initialStyle,
@@ -253,7 +254,7 @@ function MapMarker({
     return new AMap.Marker({
       position: [longitude, latitude],
       content: containerEl,
-      offset: new AMap.Pixel(-12, -12),
+      offset: new AMap.Pixel(0, 0),
       draggable,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -261,7 +262,7 @@ function MapMarker({
 
   useEffect(() => {
     if (!map || !marker) return;
-    marker.addTo(map);
+    marker.setMap(map);
 
     const handleClick = () => onClickRef.current?.();
     const handleMouseOver = () => onMouseEnterRef.current?.();
@@ -315,7 +316,7 @@ function MarkerContent({ children, className }: MarkerContentProps) {
   const el = marker.getContent() as HTMLElement;
 
   return createPortal(
-    <div className={cn("relative cursor-pointer", className)}>
+    <div className={cn("relative -translate-x-1/2 -translate-y-1/2 cursor-pointer", className)}>
       {children || <DefaultMarkerIcon />}
     </div>,
     el
@@ -752,7 +753,7 @@ function MapRoute({
       lineCap: "round",
     });
 
-    polyline.addTo(map);
+    polyline.setMap(map);
     polylineRef.current = polyline;
 
     const handleClick = () => onClickRef.current?.();

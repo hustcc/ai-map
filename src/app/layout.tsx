@@ -10,7 +10,7 @@ import { Footer } from "@/components/footer";
 const geist = GeistSans;
 const geistMono = GeistMono;
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://map.ling.pub";
 const siteName = "ai-map";
 const creator = "https://github.com/hustcc";
 const siteDescription =

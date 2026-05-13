@@ -5,30 +5,18 @@ import { Map, MapControls, useMap } from "@/registry/map";
 import { Button } from "@/components/ui/button";
 import { Layers, X } from "lucide-react";
 
-// Beijing parks as polygon paths
-const parks = [
-  {
-    name: "Chaoyang Park",
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    path: [
-      [116.4600, 39.9370],
-      [116.4750, 39.9370],
-      [116.4750, 39.9480],
-      [116.4600, 39.9480],
-      [116.4600, 39.9370],
-    ] as [number, number][],
-  },
-  {
-    name: "Olympic Forest Park",
-    path: [
-      [116.3750, 40.0000],
-      [116.4050, 40.0000],
-      [116.4050, 40.0220],
-      [116.3750, 40.0220],
-      [116.3750, 40.0000],
-    ] as [number, number][],
-  },
-];
+// Forbidden City (故宫博物院) approximate boundary
+const forbiddenCity = {
+  name: "故宫博物院",
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  path: [
+    [116.3913, 39.9134],
+    [116.4030, 39.9134],
+    [116.4030, 39.9243],
+    [116.3913, 39.9243],
+    [116.3913, 39.9134],
+  ] as [number, number][],
+};
 
 function CustomLayer() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -45,20 +33,18 @@ function CustomLayer() {
   const addLayers = useCallback(() => {
     if (!map || !AMap) return;
     removeLayers();
-    parks.forEach((park) => {
-      const polygon = new AMap.Polygon({
-        path: park.path,
-        fillColor: "#22c55e",
-        fillOpacity: 0.4,
-        strokeColor: "#16a34a",
+    const polygon = new AMap.Polygon({
+        path: forbiddenCity.path,
+        fillColor: "#ef4444",
+        fillOpacity: 0.25,
+        strokeColor: "#dc2626",
         strokeWeight: 2,
         strokeOpacity: 1,
       });
-      polygon.addTo(map);
-      polygon.on("mouseover", () => setHoveredPark(park.name));
+      polygon.setMap(map);
+      polygon.on("mouseover", () => setHoveredPark(forbiddenCity.name));
       polygon.on("mouseout", () => setHoveredPark(null));
       polygonsRef.current.push(polygon);
-    });
   }, [map, AMap, removeLayers]);
 
   useEffect(() => {
@@ -89,7 +75,7 @@ function CustomLayer() {
           ) : (
             <Layers className="size-4 mr-1.5" />
           )}
-          {isLayerVisible ? "Hide Parks" : "Show Parks"}
+          {isLayerVisible ? "Hide Layer" : "Show Layer"}
         </Button>
       </div>
 
@@ -105,7 +91,7 @@ function CustomLayer() {
 export function CustomLayerExample() {
   return (
     <div className="h-[400px] w-full">
-      <Map center={[116.430, 39.980]} zoom={11}>
+      <Map center={[116.3972, 39.9189]} zoom={14}>
         <MapControls />
         <CustomLayer />
       </Map>

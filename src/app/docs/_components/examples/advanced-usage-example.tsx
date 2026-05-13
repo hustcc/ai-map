@@ -19,8 +19,12 @@ function MapController() {
     };
 
     map.on("moveend", handleMove);
+    map.on("pitchchange", handleMove);
+    map.on("rotatechange", handleMove);
     return () => {
       map.off("moveend", handleMove);
+      map.off("pitchchange", handleMove);
+      map.off("rotatechange", handleMove);
     };
   }, [map, isLoaded]);
 

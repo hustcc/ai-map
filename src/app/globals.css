@@ -126,7 +126,7 @@
 }
 
 .container {
-  @apply px-6;
+  @apply mx-auto px-6;
 }
 
 @keyframes fade-up {

@@ -16,8 +16,7 @@ const trailCoordinates: [number, number][] = [
   [116.3970, 39.9990],
   [116.3990, 40.0030],
   [116.3960, 40.0070],
-  [116.3930, 40.0100],
-  [116.3906, 40.0110],
+  [116.3915, 40.0108],
 ];
 const start = trailCoordinates[0];
 const end = trailCoordinates[trailCoordinates.length - 1];
