@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npx shadcn build -o ./public/maps && next build",
     "start": "next start",
     "lint": "eslint",
     "registry:build": "npx shadcn build -o ./public/maps"

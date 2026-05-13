@@ -10,7 +10,7 @@ import { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Map, MapControls } from "@/registry/map";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "site-url-here";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://map.ling.pub";
 
 const installCode = `npx shadcn@latest add ${siteUrl}/maps/map.json`;
 
