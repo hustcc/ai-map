@@ -129,7 +129,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
         currentStyleRef.current = initialStyle;
 
         map = new AMap.Map(containerRef.current, {
-          viewMode: "2D",
+          viewMode: "3D",
           zoom,
           center,
           mapStyle: initialStyle,

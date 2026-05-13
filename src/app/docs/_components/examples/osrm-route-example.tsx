@@ -2,16 +2,14 @@
 
 import { useState } from "react";
 import { Map, MapRoute, MapMarker, MarkerContent } from "@/registry/map";
-import { Button } from "@/components/ui/button";
 
-// Hardcoded routes between Beijing landmarks
 const routeOptions = [
   {
     id: "highway",
     label: "高速路线",
     color: "#3b82f6",
     coordinates: [
-      [116.397428, 39.90923], // Tiananmen
+      [116.397428, 39.90923],
       [116.41, 39.91],
       [116.45, 39.92],
       [116.48, 39.97],
@@ -25,7 +23,7 @@ const routeOptions = [
     label: "城区路线",
     color: "#10b981",
     coordinates: [
-      [116.397428, 39.90923], // Tiananmen
+      [116.397428, 39.90923],
       [116.415, 39.915],
       [116.43, 39.93],
       [116.45, 39.96],
@@ -39,7 +37,7 @@ const routeOptions = [
     label: "景观路线",
     color: "#f59e0b",
     coordinates: [
-      [116.397428, 39.90923], // Tiananmen
+      [116.397428, 39.90923],
       [116.38, 39.92],
       [116.37, 39.95],
       [116.4, 40.0],
@@ -59,7 +57,7 @@ export function OsrmRouteExample() {
 
   return (
     <div className="h-full w-full relative">
-      <Map center={[116.44, 39.96]} zoom={10}>
+      <Map center={[116.44, 39.96]} zoom={11}>
         {routeOptions.map((route) => (
           <MapRoute
             key={route.id}
@@ -87,33 +85,60 @@ export function OsrmRouteExample() {
         </MapMarker>
       </Map>
 
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-background/90 backdrop-blur-sm border rounded-lg p-2 shadow-lg">
-        {routeOptions.map((route) => (
-          <Button
-            key={route.id}
-            variant={activeRoute === route.id ? "default" : "outline"}
-            size="sm"
-            onClick={() => setActiveRoute(route.id)}
-            className="gap-1"
-          >
-            <span
-              className="inline-block size-2 rounded-full"
-              style={{ backgroundColor: route.color }}
-            />
-            {route.label}
-            <span className="text-xs text-muted-foreground ml-1">
-              {route.duration}
-            </span>
-          </Button>
-        ))}
+      <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg text-sm border border-gray-100">
+        <div className="flex items-center gap-2 mb-2">
+          <span
+            className="size-2 rounded-full shrink-0"
+            style={{ backgroundColor: selected.color }}
+          />
+          <span className="font-medium text-gray-900 text-[13px]">
+            {selected.label}
+          </span>
+        </div>
+        <div className="text-gray-500 text-xs leading-relaxed">
+          {selected.distance} · {selected.duration}
+        </div>
       </div>
 
-      <div className="absolute top-4 right-4 bg-background/90 backdrop-blur-sm border rounded-lg p-3 shadow-lg text-sm">
-        <p className="font-medium" style={{ color: selected.color }}>
-          {selected.label}
-        </p>
-        <p className="text-muted-foreground">{selected.distance}</p>
-        <p className="text-muted-foreground">{selected.duration}</p>
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-white/95 backdrop-blur-sm rounded-xl p-2 shadow-lg border border-gray-100">
+        {routeOptions.map((route) => (
+          <button
+            key={route.id}
+            onClick={() => setActiveRoute(route.id)}
+            className="relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors cursor-pointer"
+            style={{
+              backgroundColor:
+                activeRoute === route.id
+                  ? `${route.color}10`
+                  : "transparent",
+            }}
+          >
+            <span
+              className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-full"
+              style={{
+                backgroundColor:
+                  activeRoute === route.id ? route.color : "#d1d5db",
+              }}
+            />
+            <div className="pl-1.5">
+              <div className="text-xs text-gray-500 leading-tight">
+                {route.label}
+              </div>
+              <div
+                className="text-[15px] font-semibold leading-snug"
+                style={{
+                  color:
+                    activeRoute === route.id ? route.color : "#374151",
+                }}
+              >
+                {route.duration}
+              </div>
+              <div className="text-[11px] text-gray-400 leading-tight">
+                {route.distance}
+              </div>
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   );
