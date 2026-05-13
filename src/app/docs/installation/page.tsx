@@ -12,7 +12,7 @@ import { Map, MapControls } from "@/registry/map";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://map.ling.pub";
 
-const installCode = `npx shadcn@latest add ${siteUrl}/maps/map.json`;
+const installCode = `npx shadcn@latest add ${siteUrl}/map.json`;
 
 const usageCode = `import { Map, MapControls } from "@/components/ui/map";
 import { Card } from "@/components/ui/card";
@@ -20,7 +20,11 @@ import { Card } from "@/components/ui/card";
 export function MyMap() {
   return (
     <Card className="h-[300px] p-0 overflow-hidden">
-      <Map center={[116.397428, 39.90923]} zoom={11}>
+      <Map
+        amapKey="YOUR_AMAP_KEY"
+        center={[116.397428, 39.90923]}
+        zoom={11}
+      >
         <MapControls />
       </Map>
     </Card>
@@ -78,8 +82,9 @@ export default function InstallationPage() {
       </DocsSection>
 
       <DocsNote>
-        <strong>Note:</strong> AMap requires a valid API key (
-        <code>NEXT_PUBLIC_AMAP_KEY</code>). Get your key at{" "}
+        <strong>Note:</strong> AMap requires a valid API key. Pass it via the{" "}
+        <code>amapKey</code> prop or set the <code>NEXT_PUBLIC_AMAP_KEY</code>{" "}
+        environment variable. Get your key at{" "}
         <a href="https://lbs.amap.com/" className="underline" target="_blank" rel="noreferrer">
           lbs.amap.com
         </a>

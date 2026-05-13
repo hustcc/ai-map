@@ -60,7 +60,7 @@ type MapProps = {
   styles?: { light?: string; dark?: string };
   /** Additional CSS class for the container */
   className?: string;
-  /** AMap JS API key - defaults to NEXT_PUBLIC_AMAP_KEY env var */
+  /** AMap JS API key */
   amapKey?: string;
 };
 
@@ -108,7 +108,8 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     if (!containerRef.current) return;
 
     const key =
-      amapKey ?? "f59bcf249433f8b05caaee19f349b3d7";
+      amapKey ?? process.env.NEXT_PUBLIC_AMAP_KEY ??
+      "f59bcf249433f8b05caaee19f349b3d7";
 
     let map: AMapInstance = null;
 
