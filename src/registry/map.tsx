@@ -30,7 +30,8 @@ declare global {
 
 const defaultStyles = {
   dark: "amap://styles/dark",
-  light: "amap://styles/normal",
+  light: "amap://styles/light",
+  normal: "amap://styles/normal",
 };
 
 type MapContextValue = {
@@ -253,7 +254,7 @@ function MapMarker({
     return new AMap.Marker({
       position: [longitude, latitude],
       content: containerEl,
-      offset: new AMap.Pixel(-12, -12),
+      offset: new AMap.Pixel(0, 0),
       draggable,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -315,7 +316,7 @@ function MarkerContent({ children, className }: MarkerContentProps) {
   const el = marker.getContent() as HTMLElement;
 
   return createPortal(
-    <div className={cn("relative cursor-pointer", className)}>
+    <div className={cn("relative -translate-x-1/2 -translate-y-1/2 cursor-pointer", className)}>
       {children || <DefaultMarkerIcon />}
     </div>,
     el
