@@ -261,7 +261,7 @@ function MapMarker({
 
   useEffect(() => {
     if (!map || !marker) return;
-    marker.addTo(map);
+    marker.setMap(map);
 
     const handleClick = () => onClickRef.current?.();
     const handleMouseOver = () => onMouseEnterRef.current?.();
@@ -752,7 +752,7 @@ function MapRoute({
       lineCap: "round",
     });
 
-    polyline.addTo(map);
+    polyline.setMap(map);
     polylineRef.current = polyline;
 
     const handleClick = () => onClickRef.current?.();

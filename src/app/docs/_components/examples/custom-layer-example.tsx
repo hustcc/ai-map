@@ -54,7 +54,7 @@ function CustomLayer() {
         strokeWeight: 2,
         strokeOpacity: 1,
       });
-      polygon.addTo(map);
+      polygon.setMap(map);
       polygon.on("mouseover", () => setHoveredPark(park.name));
       polygon.on("mouseout", () => setHoveredPark(null));
       polygonsRef.current.push(polygon);

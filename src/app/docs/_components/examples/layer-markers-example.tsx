@@ -63,7 +63,7 @@ function MarkersLayer() {
         content: div,
         offset: new AMap.Pixel(-6, -6),
       });
-      marker.addTo(map);
+      marker.setMap(map);
 
       marker.on("click", () => {
         setSelectedPoint({
