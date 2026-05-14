@@ -1,11 +1,15 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export function Footer() {
   return (
     <footer className="w-full py-8 border-t border-border/40 bg-muted/20">
       <div className="container flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
-          <span>© {new Date().getFullYear()} amapcn</span>
+          <span className="flex items-center gap-1.5">
+            <Image src="/icon.svg" alt="amapcn" width={14} height={14} />
+            © {new Date().getFullYear()} amapcn
+          </span>
           <span className="text-border">•</span>
           <span>
             Built by{" "}

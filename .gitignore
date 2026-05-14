@@ -41,3 +41,5 @@ pnpm-lock.yaml
 
 # generated build artifacts
 /public/
+
+.claude

@@ -54,9 +54,6 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
-  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -66,7 +63,7 @@ export const metadata: Metadata = {
     description: siteDescription,
     images: [
       {
-        url: "/banner.png",
+        url: "https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*KpQ6TY5Y1OIAAAAAgBAAAAgAemJ7AQ/fmt.avif",
         width: 1200,
         height: 630,
         alt: "amapcn - Beautiful maps, made simple",
@@ -78,7 +75,7 @@ export const metadata: Metadata = {
     title: "amapcn - Beautiful AMap components made simple",
     description: siteDescription,
     creator: creator,
-    images: ["/banner.png"],
+    images: ["https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*KpQ6TY5Y1OIAAAAAgBAAAAgAemJ7AQ/fmt.avif"],
   },
   alternates: {
     canonical: siteUrl,
@@ -101,7 +98,7 @@ export default function RootLayout({
         <ThemeProvider>
           <div className="flex-1">{children}</div>
           <Footer />
-                  </ThemeProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,5 +1,5 @@
-import { MapPin } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 import { Separator } from "@/components/ui/separator";
 import { GitHubButton } from "@/components/github-button";
@@ -22,7 +22,7 @@ export function Header({ className, leftContent }: HeaderProps) {
             href="/"
             className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
           >
-            <MapPin className="size-4" />
+            <Image src="/icon.svg" alt="amapcn" width={18} height={18} />
             <span className="font-semibold tracking-tight">amapcn</span>
           </Link>
           <Separator orientation="vertical" className="hidden sm:block" />

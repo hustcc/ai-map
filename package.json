@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx shadcn build -o ./public && next build",
+    "build": "npx shadcn build -o ./public/r && next build",
     "start": "next start",
     "lint": "eslint",
-    "registry:build": "npx shadcn build -o ./public"
+    "registry:build": "npx shadcn build -o ./public/r"
   },
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
