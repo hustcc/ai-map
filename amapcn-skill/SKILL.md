@@ -40,8 +40,8 @@ import {
   Map, useMap, MapMarker, MarkerContent, MarkerPopup,
   MarkerTooltip, MarkerLabel, MapPopup, MapControls,
   MapRoute, MapClusterLayer,
-} from "@/components/ui/map";
-import type { MapRef } from "@/components/ui/map";
+} from "amapcn";
+import type { MapRef } from "amapcn";
 ```
 
 ## Component Hierarchy
@@ -127,5 +127,5 @@ const { map, AMap, isLoaded } = useMap();
 
 ## Additional Resources
 
-- **references/api-reference.md** — Complete props tables for all components
-- **references/examples.md** — Full usage patterns and code examples
+- [references/api-reference.md](references/api-reference.md) — Complete props tables for all components
+- [references/examples.md](references/examples.md) — Full usage patterns and code examples
