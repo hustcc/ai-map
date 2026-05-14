@@ -26,7 +26,7 @@ npx shadcn@latest add https://map.ling.pub/r/amap.json
 ```
 
 ```tsx
-import { Map, MapMarker } from "amapcn";
+import { Map, MapMarker } from "@/components/ui/map";
 ```
 
 ### API Key
