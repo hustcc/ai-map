@@ -9,7 +9,7 @@ type: reference
 ## Basic Map
 
 ```tsx
-import { Map, MapControls } from "@/components/ui/map";
+import { Map, MapControls } from "amapcn";
 
 export function BasicMap() {
   return (
