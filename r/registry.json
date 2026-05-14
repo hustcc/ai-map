@@ -12,7 +12,7 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/map.tsx",
+          "path": "src/map.tsx",
           "type": "registry:ui",
           "target": "components/ui/map.tsx"
         }
