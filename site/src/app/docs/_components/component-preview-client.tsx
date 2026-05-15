@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { CopyButton } from "./copy-button";
 
@@ -18,6 +18,30 @@ export function ComponentPreviewClient({
   className,
 }: ComponentPreviewClientProps) {
   const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
+  const [shouldRenderPreview, setShouldRenderPreview] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const node = previewRef.current;
+    if (!node || shouldRenderPreview) return;
+    if (!("IntersectionObserver" in window)) {
+      setShouldRenderPreview(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldRenderPreview(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [shouldRenderPreview]);
 
   return (
     <div className="w-full rounded-lg border overflow-hidden">
@@ -50,7 +74,10 @@ export function ComponentPreviewClient({
         <CopyButton text={code} />
       </div>
 
-      <div className={cn("h-[400px] overflow-hidden relative", className)}>
+      <div
+        ref={previewRef}
+        className={cn("h-[400px] overflow-hidden relative", className)}
+      >
         {/* Both panels are always mounted and stacked with absolute positioning.
             Using `invisible` (visibility:hidden) instead of `hidden` (display:none)
             keeps the map container in the layout so AMap always knows its dimensions,
@@ -61,7 +88,7 @@ export function ComponentPreviewClient({
             activeTab !== "preview" && "invisible pointer-events-none"
           )}
         >
-          {children}
+          {shouldRenderPreview ? children : null}
         </div>
         <div
           className={cn(
