@@ -24,7 +24,6 @@ export function DashedRouteExample() {
           width={3}
           opacity={0.9}
           dashed
-          arrows
         />
         {stops.map((stop) => (
           <MapMarker key={stop.name} longitude={stop.lng} latitude={stop.lat}>

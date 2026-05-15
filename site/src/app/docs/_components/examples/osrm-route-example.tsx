@@ -100,12 +100,12 @@ export function OsrmRouteExample() {
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-white/95 backdrop-blur-sm rounded-xl p-2 shadow-lg border border-gray-100">
+      <div className="absolute bottom-4 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto flex gap-2 bg-white/95 backdrop-blur-sm rounded-xl p-2 shadow-lg border border-gray-100">
         {routeOptions.map((route) => (
           <button
             key={route.id}
             onClick={() => setActiveRoute(route.id)}
-            className="relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors cursor-pointer"
+            className="relative flex-1 sm:flex-none flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors cursor-pointer"
             style={{
               backgroundColor:
                 activeRoute === route.id

@@ -98,24 +98,13 @@ const [visible, setVisible] = useState(true);
 </Map>
 ```
 
-## Route with Dashed Style and Arrows
+## Route with Dashed Style
 
 ```tsx
 <MapRoute
   coordinates={[[116.397, 39.909], [116.407, 39.919], [116.417, 39.929]]}
   color="#3b82f6"
   dashed
-  arrows
-/>
-```
-
-## Route with Animation
-
-```tsx
-<MapRoute
-  coordinates={[[116.397, 39.909], [116.407, 39.919], [116.417, 39.929]]}
-  color="#3b82f6"
-  animated
 />
 ```
 

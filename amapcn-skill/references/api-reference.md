@@ -159,8 +159,6 @@ Draws a polyline on the map connecting coordinates. Must be inside `Map`.
 | `width` | `number` | `4` | Stroke width in px |
 | `opacity` | `number` | `0.8` | Stroke opacity (0-1) |
 | `dashed` | `boolean` | `false` | Dashed line style |
-| `arrows` | `boolean` | `false` | Direction arrows along the route |
-| `animated` | `boolean` | `false` | Moving marker animation (AMap.MoveAnimation) |
 | `onClick` | `() => void` | — | Click callback |
 
 ## MapClusterLayer

@@ -604,19 +604,6 @@ export default function ApiReferencePage() {
               description: "Render the route as a dashed line.",
             },
             {
-              name: "arrows",
-              type: "boolean",
-              default: "false",
-              description: "Show direction arrows along the route.",
-            },
-            {
-              name: "animated",
-              type: "boolean",
-              default: "false",
-              description:
-                "Animate a moving marker along the route using AMap.MoveAnimation.",
-            },
-            {
               name: "onClick",
               type: "() => void",
               description: "Callback when the route line is clicked.",

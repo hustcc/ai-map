@@ -123,11 +123,11 @@ Key props: `longitude`, `latitude` (required), `draggable`, `onDragStart`, `onDr
 <MapRoute
   coordinates={[[lng1, lat1], [lng2, lat2]]}
   color="#4285F4" width={4} opacity={0.8}
-  dashed arrows animated
+  dashed
 />
 ```
 
-`dashed` — dashed line style; `arrows` — direction arrows; `animated` — moving marker via AMap.MoveAnimation.
+`dashed` — dashed line style.
 
 ### MapPolygon
 

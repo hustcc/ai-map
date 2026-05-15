@@ -4,7 +4,6 @@ import { useTheme } from "next-themes";
 import {
   createContext,
   forwardRef,
-  useCallback,
   useContext,
   useEffect,
   useImperativeHandle,
@@ -27,6 +26,47 @@ declare global {
     _AMapSecurityConfig?: { securityJsCode?: string };
   }
 }
+
+// ---- Shared hooks ----
+
+function useLatestRef<T>(value: T) {
+  const ref = useRef(value);
+  ref.current = value;
+  return ref;
+}
+
+function useOverlayEvents(
+  overlay: AMapInstance | null,
+  events: {
+    onClick?: () => void;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
+  }
+) {
+  const clickRef = useLatestRef(events.onClick);
+  const enterRef = useLatestRef(events.onMouseEnter);
+  const leaveRef = useLatestRef(events.onMouseLeave);
+
+  useEffect(() => {
+    if (!overlay) return;
+    const handleClick = () => clickRef.current?.();
+    const handleOver = () => enterRef.current?.();
+    const handleOut = () => leaveRef.current?.();
+
+    overlay.on("click", handleClick);
+    overlay.on("mouseover", handleOver);
+    overlay.on("mouseout", handleOut);
+
+    return () => {
+      overlay.off("click", handleClick);
+      overlay.off("mouseover", handleOver);
+      overlay.off("mouseout", handleOut);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [overlay]);
+}
+
+// ---- Map ----
 
 const defaultStyles = {
   dark: "amap://styles/dark",
@@ -118,14 +158,11 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
   const { resolvedTheme } = useTheme();
   const currentStyleRef = useRef<string | null>(null);
 
-  const onLoadRef = useRef(onLoad);
-  const onClickRef = useRef(onClick);
-  const onMoveEndRef = useRef(onMoveEnd);
-  const onZoomEndRef = useRef(onZoomEnd);
-  onLoadRef.current = onLoad;
-  onClickRef.current = onClick;
-  onMoveEndRef.current = onMoveEnd;
-  onZoomEndRef.current = onZoomEnd;
+  const onLoadRef = useLatestRef(onLoad);
+  const onClickRef = useLatestRef(onClick);
+  const onMoveEndRef = useLatestRef(onMoveEnd);
+  const onZoomEndRef = useLatestRef(onZoomEnd);
+  const onErrorRef = useLatestRef(onError);
 
   const mapStyles = useMemo(
     () => ({
@@ -142,8 +179,6 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
 
     const key = amapKey ?? "983f0d71329b83141e06427729399d5e";
     const code = securityJsCode ?? "0105e3185f27b87d2aab3c2bad23fc86";
-    // securityJsCode is set globally in layout.tsx <head> script;
-    // only override here if explicitly passed as a prop.
     if (code) {
       window._AMapSecurityConfig = { securityJsCode: code };
     }
@@ -183,21 +218,24 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       .catch((err: unknown) => {
         const error = err instanceof Error ? err : new Error(String(err));
         console.error("AMap load error:", error);
-        onError?.(error);
+        onErrorRef.current?.(error);
       });
 
     return () => {
-      if (map) {
-        map.destroy();
-      }
       setIsLoaded(false);
       setMapInstance(null);
       setAmapNS(null);
+      // Defer map.destroy() so child components unmount first and
+      // don't call methods on a destroyed map instance.
+      if (map) {
+        queueMicrotask(() => {
+          try { map.destroy(); } catch { /* ignore */ }
+        });
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Theme change
   useEffect(() => {
     if (!mapInstance || !resolvedTheme) return;
     const newStyle =
@@ -207,19 +245,19 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     mapInstance.setMapStyle(newStyle);
   }, [mapInstance, resolvedTheme, mapStyles]);
 
-  // Sync center changes
+  // Sync center — use serialized key to avoid effect storm from inline arrays
+  const centerKey = center ? `${center[0]},${center[1]}` : null;
   useEffect(() => {
-    if (!mapInstance) return;
+    if (!mapInstance || !center) return;
     mapInstance.panTo(center);
-  }, [mapInstance, center]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapInstance, centerKey]);
 
-  // Sync zoom changes
   useEffect(() => {
     if (!mapInstance) return;
     mapInstance.setZoom(zoom);
   }, [mapInstance, zoom]);
 
-  // Map event callbacks (click, moveend, zoomend)
   useEffect(() => {
     if (!mapInstance) return;
     const handleClick = (e: AMapInstance) => {
@@ -238,7 +276,6 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     };
   }, [mapInstance]);
 
-  // Sync bounds changes
   const boundsKey = bounds
     ? `${bounds[0][0]},${bounds[0][1]},${bounds[1][0]},${bounds[1][1]}`
     : null;
@@ -313,22 +350,16 @@ function MapMarker({
   visible = true,
 }: MapMarkerProps) {
   const { map, AMap } = useMap();
-  const containerEl = useMemo(() => document.createElement("div"), []);
+  const containerEl = useMemo(
+    () => (typeof document !== "undefined" ? document.createElement("div") : null),
+    []
+  );
 
-  // Keep latest callbacks in refs to avoid stale closures
-  const onClickRef = useRef(onClick);
-  const onMouseEnterRef = useRef(onMouseEnter);
-  const onMouseLeaveRef = useRef(onMouseLeave);
-  const onDragStartRef = useRef(onDragStart);
-  const onDragEndRef = useRef(onDragEnd);
-  onClickRef.current = onClick;
-  onMouseEnterRef.current = onMouseEnter;
-  onMouseLeaveRef.current = onMouseLeave;
-  onDragStartRef.current = onDragStart;
-  onDragEndRef.current = onDragEnd;
+  const onDragStartRef = useLatestRef(onDragStart);
+  const onDragEndRef = useLatestRef(onDragEnd);
 
   const marker = useMemo(() => {
-    if (!AMap) return null;
+    if (!AMap || !containerEl) return null;
     return new AMap.Marker({
       position: [longitude, latitude],
       content: containerEl,
@@ -338,13 +369,12 @@ function MapMarker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [AMap]);
 
+  useOverlayEvents(marker, { onClick, onMouseEnter, onMouseLeave });
+
   useEffect(() => {
     if (!map || !marker) return;
     marker.setMap(map);
 
-    const handleClick = () => onClickRef.current?.();
-    const handleMouseOver = () => onMouseEnterRef.current?.();
-    const handleMouseOut = () => onMouseLeaveRef.current?.();
     const handleDragStart = () => {
       const pos = marker.getPosition();
       onDragStartRef.current?.({ lng: pos.getLng(), lat: pos.getLat() });
@@ -354,16 +384,10 @@ function MapMarker({
       onDragEndRef.current?.({ lng: pos.getLng(), lat: pos.getLat() });
     };
 
-    marker.on("click", handleClick);
-    marker.on("mouseover", handleMouseOver);
-    marker.on("mouseout", handleMouseOut);
     marker.on("dragstart", handleDragStart);
     marker.on("dragend", handleDragEnd);
 
     return () => {
-      marker.off("click", handleClick);
-      marker.off("mouseover", handleMouseOver);
-      marker.off("mouseout", handleMouseOut);
       marker.off("dragstart", handleDragStart);
       marker.off("dragend", handleDragEnd);
       marker.setMap(null);
@@ -437,11 +461,14 @@ type MarkerPopupProps = {
 function MarkerPopup({ children, className, closeButton = false }: MarkerPopupProps) {
   const { marker, map } = useMarkerContext();
   const { AMap } = useMap();
-  const container = useMemo(() => document.createElement("div"), []);
+  const container = useMemo(
+    () => (typeof document !== "undefined" ? document.createElement("div") : null),
+    []
+  );
   const infoWindowRef = useRef<AMapInstance>(null);
 
   useEffect(() => {
-    if (!map || !AMap) return;
+    if (!map || !AMap || !container) return;
 
     const infoWindow = new AMap.InfoWindow({
       content: container,
@@ -471,6 +498,8 @@ function MarkerPopup({ children, className, closeButton = false }: MarkerPopupPr
   const handleClose = () => {
     infoWindowRef.current?.close();
   };
+
+  if (!container) return null;
 
   return createPortal(
     <div
@@ -505,10 +534,13 @@ type MarkerTooltipProps = {
 function MarkerTooltip({ children, className }: MarkerTooltipProps) {
   const { marker, map } = useMarkerContext();
   const { AMap } = useMap();
-  const container = useMemo(() => document.createElement("div"), []);
+  const container = useMemo(
+    () => (typeof document !== "undefined" ? document.createElement("div") : null),
+    []
+  );
 
   useEffect(() => {
-    if (!map || !AMap) return;
+    if (!map || !AMap || !container) return;
 
     const tooltip = new AMap.InfoWindow({
       content: container,
@@ -534,6 +566,8 @@ function MarkerTooltip({ children, className }: MarkerTooltipProps) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, AMap]);
+
+  if (!container) return null;
 
   return createPortal(
     <div
@@ -591,12 +625,15 @@ function MapPopup({
   closeButton = false,
 }: MapPopupProps) {
   const { map, AMap } = useMap();
-  const container = useMemo(() => document.createElement("div"), []);
-
+  const container = useMemo(
+    () => (typeof document !== "undefined" ? document.createElement("div") : null),
+    []
+  );
   const infoWindowRef = useRef<AMapInstance>(null);
+  const onCloseRef = useLatestRef(onClose);
 
   useEffect(() => {
-    if (!map || !AMap) return;
+    if (!map || !AMap || !container) return;
 
     const infoWindow = new AMap.InfoWindow({
       content: container,
@@ -607,7 +644,7 @@ function MapPopup({
     infoWindowRef.current = infoWindow;
     infoWindow.open(map, [longitude, latitude]);
 
-    infoWindow.on("close", () => onClose?.());
+    infoWindow.on("close", () => onCloseRef.current?.());
 
     return () => {
       infoWindow.close();
@@ -615,14 +652,19 @@ function MapPopup({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, AMap]);
 
+  // Use serialized key to avoid effect storm from inline arrays
+  const positionKey = `${longitude},${latitude}`;
   useEffect(() => {
     if (!infoWindowRef.current) return;
     infoWindowRef.current.setPosition([longitude, latitude]);
-  }, [longitude, latitude]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [positionKey]);
 
   const handleClose = () => {
     infoWindowRef.current?.close();
   };
+
+  if (!container) return null;
 
   return createPortal(
     <div
@@ -740,8 +782,12 @@ function ScaleBar({ map }: { map: AMapInstance }) {
     map.on("zoomend", update);
     map.on("moveend", update);
     return () => {
-      map.off("zoomend", update);
-      map.off("moveend", update);
+      try {
+        map.off("zoomend", update);
+        map.off("moveend", update);
+      } catch {
+        // map may be destroyed
+      }
     };
   }, [map]);
 
@@ -772,21 +818,9 @@ function MapControls({
 }: MapControlsProps) {
   const { map, isLoaded } = useMap();
   const [waitingForLocation, setWaitingForLocation] = useState(false);
+  const onLocateRef = useLatestRef(onLocate);
 
-  const handleZoomIn = useCallback(() => {
-    map?.zoomIn();
-  }, [map]);
-
-  const handleZoomOut = useCallback(() => {
-    map?.zoomOut();
-  }, [map]);
-
-  const handleResetBearing = useCallback(() => {
-    map?.setRotation(0);
-    map?.setPitch(0);
-  }, [map]);
-
-  const handleLocate = useCallback(() => {
+  const handleLocate = () => {
     if (!("geolocation" in navigator)) {
       setWaitingForLocation(false);
       return;
@@ -800,7 +834,7 @@ function MapControls({
         };
         map?.panTo([coords.longitude, coords.latitude]);
         map?.setZoom(14);
-        onLocate?.(coords);
+        onLocateRef.current?.(coords);
         setWaitingForLocation(false);
       },
       (error) => {
@@ -808,17 +842,7 @@ function MapControls({
         setWaitingForLocation(false);
       }
     );
-  }, [map, onLocate]);
-
-  const handleFullscreen = useCallback(() => {
-    const container = map?.getContainer();
-    if (!container) return;
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    } else {
-      container.requestFullscreen();
-    }
-  }, [map]);
+  };
 
   if (!isLoaded) return null;
 
@@ -833,17 +857,17 @@ function MapControls({
       >
         {showZoom && (
           <ControlGroup>
-            <ControlButton onClick={handleZoomIn} label="Zoom in">
+            <ControlButton onClick={() => map?.zoomIn()} label="Zoom in">
               <Plus className="size-4" />
             </ControlButton>
-            <ControlButton onClick={handleZoomOut} label="Zoom out">
+            <ControlButton onClick={() => map?.zoomOut()} label="Zoom out">
               <Minus className="size-4" />
             </ControlButton>
           </ControlGroup>
         )}
         {showCompass && (
           <ControlGroup>
-            <ControlButton onClick={handleResetBearing} label="Reset bearing to north">
+            <ControlButton onClick={() => { map?.setRotation(0); map?.setPitch(0); }} label="Reset bearing to north">
               <svg viewBox="0 0 24 24" className="size-5">
                 <path d="M12 2L16 12H12V2Z" className="fill-red-500" />
                 <path d="M12 2L8 12H12V2Z" className="fill-red-300" />
@@ -866,7 +890,18 @@ function MapControls({
         )}
         {showFullscreen && (
           <ControlGroup>
-            <ControlButton onClick={handleFullscreen} label="Toggle fullscreen">
+            <ControlButton
+              onClick={() => {
+                const container = map?.getContainer();
+                if (!container) return;
+                if (document.fullscreenElement) {
+                  document.exitFullscreen();
+                } else {
+                  container.requestFullscreen();
+                }
+              }}
+              label="Toggle fullscreen"
+            >
               <Maximize className="size-4" />
             </ControlButton>
           </ControlGroup>
@@ -891,10 +926,6 @@ type MapRouteProps = {
   onClick?: () => void;
   /** Render the route as a dashed line */
   dashed?: boolean;
-  /** Show direction arrows along the route */
-  arrows?: boolean;
-  /** Animate a moving marker along the route */
-  animated?: boolean;
 };
 
 function MapRoute({
@@ -904,22 +935,19 @@ function MapRoute({
   opacity = 0.8,
   onClick,
   dashed = false,
-  arrows = false,
-  animated = false,
 }: MapRouteProps) {
   const { map, AMap, isLoaded } = useMap();
   const polylineRef = useRef<AMapInstance>(null);
-  const animMarkerRef = useRef<AMapInstance>(null);
-  const arrowMarkersRef = useRef<AMapInstance[]>([]);
 
-  // Keep latest onClick in a ref to avoid stale closures
-  const onClickRef = useRef(onClick);
-  onClickRef.current = onClick;
+  const onClickRef = useLatestRef(onClick);
 
+  const hasCoords = coordinates.length >= 2;
+
+  // Only recreate the polyline when it appears/disappears (length crosses 2).
+  // Path updates are handled by the setPath effect below.
   useEffect(() => {
-    if (!isLoaded || !map || !AMap || coordinates.length < 2) return;
+    if (!isLoaded || !map || !AMap || !hasCoords) return;
 
-    // Create polyline fresh — also triggered when coordinates transitions from < 2 to >= 2
     const polyline = new AMap.Polyline({
       path: coordinates,
       strokeColor: color,
@@ -943,67 +971,17 @@ function MapRoute({
       polylineRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, map, AMap, coordinates.length >= 2]);
-
-  // Animated marker moving along the route — restart whenever coordinates or animated flag changes
-  useEffect(() => {
-    if (!animated || !isLoaded || !map || !AMap || coordinates.length < 2) return;
-
-    // Build a dense interpolated path so the marker moves smoothly
-    const LOOP_MS = 6000;
-    const STEP_MS = 50;
-    const totalSteps = LOOP_MS / STEP_MS;
-    const segs = coordinates.length - 1;
-    const stepsPerSeg = Math.ceil(totalSteps / segs);
-    const pathPoints: [number, number][] = [];
-    for (let i = 0; i < segs; i++) {
-      const [x1, y1] = coordinates[i];
-      const [x2, y2] = coordinates[i + 1];
-      for (let s = 0; s < stepsPerSeg; s++) {
-        const t = s / stepsPerSeg;
-        pathPoints.push([x1 + (x2 - x1) * t, y1 + (y2 - y1) * t]);
-      }
-    }
-    pathPoints.push(coordinates[coordinates.length - 1]);
-
-    const el = document.createElement("div");
-    el.style.cssText =
-      "width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid #3b82f6;box-shadow:0 0 0 4px rgba(59,130,246,.3),0 0 8px rgba(59,130,246,.6)";
-    const animMarker = new AMap.Marker({
-      position: coordinates[0],
-      content: el,
-      offset: new AMap.Pixel(-6, -6),
-    });
-    animMarker.setMap(map);
-    animMarkerRef.current = animMarker;
-
-    let step = 0;
-    const intervalId = setInterval(() => {
-      if (animMarkerRef.current) {
-        animMarkerRef.current.setPosition(pathPoints[step % pathPoints.length]);
-      }
-      step++;
-    }, STEP_MS);
-
-    return () => {
-      clearInterval(intervalId);
-      if (animMarkerRef.current) {
-        animMarkerRef.current.setMap(null);
-        animMarkerRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, map, AMap, animated, coordinates]);
+  }, [isLoaded, map, AMap, hasCoords]);
 
   useEffect(() => {
     if (!polylineRef.current) return;
-    if (coordinates.length < 2) {
+    if (!hasCoords) {
       polylineRef.current.setMap(null);
       polylineRef.current = null;
       return;
     }
     polylineRef.current.setPath(coordinates);
-  }, [coordinates]);
+  }, [coordinates, hasCoords]);
 
   useEffect(() => {
     if (!polylineRef.current) return;
@@ -1014,61 +992,7 @@ function MapRoute({
       strokeStyle: dashed ? "dashed" : "solid",
       strokeDasharray: dashed ? [10, 5] : undefined,
     });
-  }, [color, width, opacity, arrows, dashed]);
-
-  // Direction arrow markers rendered as CSS triangles at each segment midpoint.
-  // CSS border-trick triangles are used because SVG elements created via
-  // createElementNS may not render reliably inside AMap.Marker content.
-  useEffect(() => {
-    // Clean up previous markers first
-    arrowMarkersRef.current.forEach((m) => m.setMap(null));
-    arrowMarkersRef.current = [];
-
-    if (!arrows || !isLoaded || !map || !AMap || coordinates.length < 2) return;
-
-    for (let i = 0; i < coordinates.length - 1; i++) {
-      const [x1, y1] = coordinates[i];
-      const [x2, y2] = coordinates[i + 1];
-      const mx = (x1 + x2) / 2;
-      const my = (y1 + y2) / 2;
-      // Compass bearing from north, clockwise
-      const angleDeg = Math.atan2(x2 - x1, y2 - y1) * (180 / Math.PI);
-      // Wrapper div rotated to the route bearing; 16×14 px encloses the triangle
-      const wrapper = document.createElement("div");
-      wrapper.style.width = "16px";
-      wrapper.style.height = "14px";
-      wrapper.style.overflow = "visible";
-      wrapper.style.transform = `rotate(${angleDeg}deg)`;
-      wrapper.style.opacity = String(opacity);
-      // Set color as a CSS custom property so no user data reaches innerHTML
-      wrapper.style.setProperty("--ac", color);
-      // CSS upward-pointing triangle (tip at top = north at 0° rotation)
-      const tri = document.createElement("div");
-      tri.style.position = "absolute";
-      tri.style.left = "8px"; // center horizontally in the 16 px wrapper
-      tri.style.top = "0";
-      tri.style.width = "0";
-      tri.style.height = "0";
-      tri.style.borderLeft = "8px solid transparent";
-      tri.style.borderRight = "8px solid transparent";
-      tri.style.borderBottom = "14px solid var(--ac)";
-      wrapper.appendChild(tri);
-      const marker = new AMap.Marker({
-        position: [mx, my],
-        content: wrapper,
-        offset: new AMap.Pixel(-8, -7),
-        zIndex: 200,
-      });
-      marker.setMap(map);
-      arrowMarkersRef.current.push(marker);
-    }
-
-    return () => {
-      arrowMarkersRef.current.forEach((m) => m.setMap(null));
-      arrowMarkersRef.current = [];
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, map, AMap, arrows, coordinates, color, opacity]);
+  }, [color, width, opacity, dashed]);
 
   return null;
 }
@@ -1097,6 +1021,7 @@ function MapClusterLayer<
 }: MapClusterLayerProps<P>) {
   const { map, AMap, isLoaded } = useMap();
   const clusterRef = useRef<AMapInstance>(null);
+  const onPointClickRef = useLatestRef(onPointClick);
 
   useEffect(() => {
     if (!isLoaded || !map || !AMap) return;
@@ -1153,12 +1078,10 @@ function MapClusterLayer<
             ctx.marker.setContent(div);
             ctx.marker.setOffset(new AMap.Pixel(-6, -6));
 
-            if (onPointClick) {
-              ctx.marker.on("click", () => {
-                const feature = ctx.data.extData as GeoJSON.Feature<GeoJSON.Point, P>;
-                onPointClick(feature, feature.geometry.coordinates as [number, number]);
-              });
-            }
+            ctx.marker.on("click", () => {
+              const feature = ctx.data.extData as GeoJSON.Feature<GeoJSON.Point, P>;
+              onPointClickRef.current?.(feature, feature.geometry.coordinates as [number, number]);
+            });
           },
         });
 
@@ -1176,7 +1099,7 @@ function MapClusterLayer<
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, map, AMap, data, clusterColors, pointColor, onPointClick]);
+  }, [isLoaded, map, AMap, data, clusterColors, pointColor]);
 
   return null;
 }
@@ -1209,18 +1132,15 @@ function MapPolygon({
 }: MapPolygonProps) {
   const { map, AMap, isLoaded } = useMap();
   const polygonRef = useRef<AMapInstance>(null);
+  const [polygonObj, setPolygonObj] = useState<AMapInstance>(null);
 
-  const onClickRef = useRef(onClick);
-  const onMouseEnterRef = useRef(onMouseEnter);
-  const onMouseLeaveRef = useRef(onMouseLeave);
-  onClickRef.current = onClick;
-  onMouseEnterRef.current = onMouseEnter;
-  onMouseLeaveRef.current = onMouseLeave;
+  useOverlayEvents(polygonObj, { onClick, onMouseEnter, onMouseLeave });
+
+  const hasCoords = coordinates.length >= 3;
 
   useEffect(() => {
-    if (!isLoaded || !map || !AMap || coordinates.length < 3) return;
+    if (!isLoaded || !map || !AMap || !hasCoords) return;
 
-    // Create polygon — also triggered when coordinates transitions from < 3 to >= 3
     const polygon = new AMap.Polygon({
       path: coordinates,
       fillColor,
@@ -1232,29 +1152,20 @@ function MapPolygon({
 
     polygon.setMap(map);
     polygonRef.current = polygon;
-
-    const handleClick = () => onClickRef.current?.();
-    const handleMouseOver = () => onMouseEnterRef.current?.();
-    const handleMouseOut = () => onMouseLeaveRef.current?.();
-
-    polygon.on("click", handleClick);
-    polygon.on("mouseover", handleMouseOver);
-    polygon.on("mouseout", handleMouseOut);
+    setPolygonObj(polygon);
 
     return () => {
-      polygon.off("click", handleClick);
-      polygon.off("mouseover", handleMouseOver);
-      polygon.off("mouseout", handleMouseOut);
       polygon.setMap(null);
       polygonRef.current = null;
+      setPolygonObj(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, map, AMap, coordinates.length >= 3]);
+  }, [isLoaded, map, AMap, hasCoords]);
 
   useEffect(() => {
-    if (!polygonRef.current || coordinates.length < 3) return;
+    if (!polygonRef.current || !hasCoords) return;
     polygonRef.current.setPath(coordinates);
-  }, [coordinates]);
+  }, [coordinates, hasCoords]);
 
   useEffect(() => {
     if (!polygonRef.current) return;
@@ -1301,13 +1212,12 @@ function MapCircle({
 }: MapCircleProps) {
   const { map, AMap, isLoaded } = useMap();
   const circleRef = useRef<AMapInstance>(null);
+  const [circleObj, setCircleObj] = useState<AMapInstance>(null);
 
-  const onClickRef = useRef(onClick);
-  const onMouseEnterRef = useRef(onMouseEnter);
-  const onMouseLeaveRef = useRef(onMouseLeave);
-  onClickRef.current = onClick;
-  onMouseEnterRef.current = onMouseEnter;
-  onMouseLeaveRef.current = onMouseLeave;
+  useOverlayEvents(circleObj, { onClick, onMouseEnter, onMouseLeave });
+
+  // Use serialized key to avoid effect storm from inline center arrays
+  const centerKey = `${center[0]},${center[1]}`;
 
   useEffect(() => {
     if (!isLoaded || !map || !AMap) return;
@@ -1324,21 +1234,12 @@ function MapCircle({
 
     circle.setMap(map);
     circleRef.current = circle;
-
-    const handleClick = () => onClickRef.current?.();
-    const handleMouseOver = () => onMouseEnterRef.current?.();
-    const handleMouseOut = () => onMouseLeaveRef.current?.();
-
-    circle.on("click", handleClick);
-    circle.on("mouseover", handleMouseOver);
-    circle.on("mouseout", handleMouseOut);
+    setCircleObj(circle);
 
     return () => {
-      circle.off("click", handleClick);
-      circle.off("mouseover", handleMouseOver);
-      circle.off("mouseout", handleMouseOut);
       circle.setMap(null);
       circleRef.current = null;
+      setCircleObj(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, map, AMap]);
@@ -1346,7 +1247,8 @@ function MapCircle({
   useEffect(() => {
     if (!circleRef.current) return;
     circleRef.current.setCenter(center);
-  }, [center]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [centerKey]);
 
   useEffect(() => {
     if (!circleRef.current) return;
@@ -1438,9 +1340,6 @@ function MapHeatmap({
       cancelled = true;
       if (heatmapRef.current) {
         try {
-          // AMap.HeatMap.setMap(null) may call getStatus() on an internal
-          // reference that is already undefined when the page navigates away.
-          // Swallow the error so the teardown doesn't crash the app.
           heatmapRef.current.setMap(null);
         } catch {
           // ignore
@@ -1464,23 +1363,24 @@ function MapHeatmap({
   return null;
 }
 
-// ---- MapTrafficLayer ----
+// ---- Shared TileLayer (Traffic / Satellite) ----
 
-type MapTrafficLayerProps = {
-  /** Show or hide the traffic layer */
+type TileLayerProps = {
+  ctor: "Traffic" | "Satellite";
   visible?: boolean;
-  /** Layer opacity (0-1) */
   opacity?: number;
 };
 
-function MapTrafficLayer({ visible = true, opacity = 1 }: MapTrafficLayerProps) {
+function TileLayer({ ctor, visible = true, opacity = 1 }: TileLayerProps) {
   const { map, AMap, isLoaded } = useMap();
   const layerRef = useRef<AMapInstance>(null);
 
   useEffect(() => {
     if (!isLoaded || !map || !AMap) return;
 
-    const layer = new AMap.TileLayer.Traffic({ opacity });
+    const layer = ctor === "Traffic"
+      ? new AMap.TileLayer.Traffic({ opacity })
+      : new AMap.TileLayer.Satellite({ opacity });
     layer.setMap(map);
     layerRef.current = layer;
 
@@ -1514,7 +1414,16 @@ function MapTrafficLayer({ visible = true, opacity = 1 }: MapTrafficLayerProps) 
   return null;
 }
 
-// ---- MapSatelliteLayer ----
+type MapTrafficLayerProps = {
+  /** Show or hide the traffic layer */
+  visible?: boolean;
+  /** Layer opacity (0-1) */
+  opacity?: number;
+};
+
+function MapTrafficLayer({ visible, opacity }: MapTrafficLayerProps) {
+  return <TileLayer ctor="Traffic" visible={visible} opacity={opacity} />;
+}
 
 type MapSatelliteLayerProps = {
   /** Show or hide the satellite layer */
@@ -1523,45 +1432,8 @@ type MapSatelliteLayerProps = {
   opacity?: number;
 };
 
-function MapSatelliteLayer({ visible = true, opacity = 1 }: MapSatelliteLayerProps) {
-  const { map, AMap, isLoaded } = useMap();
-  const layerRef = useRef<AMapInstance>(null);
-
-  useEffect(() => {
-    if (!isLoaded || !map || !AMap) return;
-
-    const layer = new AMap.TileLayer.Satellite({ opacity });
-    layer.setMap(map);
-    layerRef.current = layer;
-
-    return () => {
-      if (layerRef.current) {
-        try {
-          layerRef.current.setMap(null);
-        } catch {
-          // ignore teardown errors
-        }
-        layerRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, map, AMap]);
-
-  useEffect(() => {
-    if (!layerRef.current) return;
-    if (visible) {
-      layerRef.current.show();
-    } else {
-      layerRef.current.hide();
-    }
-  }, [visible]);
-
-  useEffect(() => {
-    if (!layerRef.current) return;
-    layerRef.current.setOpacity(opacity);
-  }, [opacity]);
-
-  return null;
+function MapSatelliteLayer({ visible, opacity }: MapSatelliteLayerProps) {
+  return <TileLayer ctor="Satellite" visible={visible} opacity={opacity} />;
 }
 
 // ---- useMapEvent ----
@@ -1573,8 +1445,7 @@ function MapSatelliteLayer({ visible = true, opacity = 1 }: MapSatelliteLayerPro
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function useMapEvent(event: string, handler: (e: any) => void): void {
   const { map } = useMap();
-  const handlerRef = useRef(handler);
-  handlerRef.current = handler;
+  const handlerRef = useLatestRef(handler);
 
   useEffect(() => {
     if (!map) return;
@@ -1620,8 +1491,12 @@ function useMapBounds(): MapBounds | null {
     map.on("moveend", update);
     map.on("zoomend", update);
     return () => {
-      map.off("moveend", update);
-      map.off("zoomend", update);
+      try {
+        map.off("moveend", update);
+        map.off("zoomend", update);
+      } catch {
+        // map may be destroyed
+      }
     };
   }, [map, isLoaded]);
 
