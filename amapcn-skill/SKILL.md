@@ -81,7 +81,7 @@ Key props: `center` ([lng, lat] GCJ-02), `zoom` (3-18), `amapKey`, `styles` ({ l
 </MapMarker>
 ```
 
-Key props: `longitude`, `latitude` (required), `draggable`, `onDragEnd`, `onClick`.
+Key props: `longitude`, `latitude` (required), `draggable`, `onDragEnd`, `onClick`, `zIndex` (stacking order, default 10 — set higher on hover/active to bring marker to front).
 
 ### MapControls
 

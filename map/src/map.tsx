@@ -62,6 +62,8 @@ type MapProps = {
   className?: string;
   /** AMap JS API key */
   amapKey?: string;
+  /** AMap JS API security code (required for 2.0) */
+  securityJsCode?: string;
 };
 
 type MapRef = AMapInstance;
@@ -84,6 +86,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     styles,
     className,
     amapKey,
+    securityJsCode,
   },
   ref
 ) {
@@ -107,8 +110,13 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const key =
-      amapKey ?? "f59bcf249433f8b05caaee19f349b3d7";
+    const key = amapKey ?? "983f0d71329b83141e06427729399d5e";
+    const code = securityJsCode ?? "0105e3185f27b87d2aab3c2bad23fc86";
+    // securityJsCode is set globally in layout.tsx <head> script;
+    // only override here if explicitly passed as a prop.
+    if (code) {
+      window._AMapSecurityConfig = { securityJsCode: code };
+    }
 
     let map: AMapInstance = null;
 
@@ -222,6 +230,7 @@ type MapMarkerProps = {
   onMouseLeave?: () => void;
   draggable?: boolean;
   onDragEnd?: (lngLat: { lng: number; lat: number }) => void;
+  zIndex?: number;
 };
 
 function MapMarker({
@@ -233,6 +242,7 @@ function MapMarker({
   onMouseLeave,
   draggable = false,
   onDragEnd,
+  zIndex,
 }: MapMarkerProps) {
   const { map, AMap } = useMap();
   const containerEl = useMemo(() => document.createElement("div"), []);
@@ -293,6 +303,11 @@ function MapMarker({
     if (!marker) return;
     marker.setDraggable(draggable);
   }, [marker, draggable]);
+
+  useEffect(() => {
+    if (!marker) return;
+    marker.setzIndex(zIndex ?? 10);
+  }, [marker, zIndex]);
 
   if (!marker) return null;
 

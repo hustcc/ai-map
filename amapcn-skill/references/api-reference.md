@@ -45,6 +45,7 @@ Places a marker on the map. Acts as context provider for marker sub-components.
 | `onMouseLeave` | `() => void` | — | Mouse leave callback |
 | `draggable` | `boolean` | `false` | Enable dragging |
 | `onDragEnd` | `(lngLat: { lng: number; lat: number }) => void` | — | Drag end callback |
+| `zIndex` | `number` | `10` | Z-index stacking order (higher = on top) |
 
 ## MarkerContent
 

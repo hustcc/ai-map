@@ -1,6 +1,6 @@
 {
   "name": "amapcn-registry",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "sync": "node scripts/sync.mjs",
