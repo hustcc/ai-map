@@ -5,4 +5,6 @@ export { TrendingExample } from "./trending-example";
 export { EVChargingExample } from "./ev-charging-example";
 export { TrailExample } from "./trail-example";
 export { FlyToExample } from "./flyto-example";
+export { ZonesExample } from "./zones-example";
+export { HeatmapHomeExample } from "./heatmap-home-example";
 
