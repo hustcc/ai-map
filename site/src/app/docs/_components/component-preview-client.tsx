@@ -50,15 +50,23 @@ export function ComponentPreviewClient({
         <CopyButton text={code} />
       </div>
 
-      <div className={cn("h-[400px] overflow-hidden", className)}>
-        {/* Keep both panels mounted to avoid unmounting live map instances */}
-        <div className={cn("h-full", activeTab !== "preview" && "hidden")}>
+      <div className={cn("h-[400px] overflow-hidden relative", className)}>
+        {/* Both panels are always mounted and stacked with absolute positioning.
+            Using `invisible` (visibility:hidden) instead of `hidden` (display:none)
+            keeps the map container in the layout so AMap always knows its dimensions,
+            preventing NaN coordinate errors when switching tabs. */}
+        <div
+          className={cn(
+            "absolute inset-0",
+            activeTab !== "preview" && "invisible pointer-events-none"
+          )}
+        >
           {children}
         </div>
         <div
           className={cn(
-            "h-full p-4 overflow-auto text-sm bg-muted/20 [&_pre]:bg-transparent! [&_code]:bg-transparent!",
-            activeTab !== "code" && "hidden"
+            "absolute inset-0 p-4 overflow-auto text-sm bg-muted/20 [&_pre]:bg-transparent! [&_code]:bg-transparent!",
+            activeTab !== "code" && "invisible pointer-events-none"
           )}
           dangerouslySetInnerHTML={{ __html: highlightedCode }}
         />

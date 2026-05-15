@@ -6,6 +6,7 @@ import {
   TrailExample,
   ZonesExample,
   HeatmapHomeExample,
+  LayersHomeExample,
 } from "./examples/index";
 import { FlyToExample } from "./examples/flyto-example";
 
@@ -20,7 +21,11 @@ export function ExamplesGrid() {
         <TrendingExample />
         <DeliveryExample />
       </div>
+      {/* Third row: Layers (2 wide) + Shapes (1 wide) + Heatmap (1 wide) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="sm:col-span-2 lg:col-span-2">
+          <LayersHomeExample />
+        </div>
         <ZonesExample />
         <HeatmapHomeExample />
       </div>

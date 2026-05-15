@@ -948,28 +948,46 @@ function MapRoute({
   // Animated marker moving along the route — restart whenever coordinates or animated flag changes
   useEffect(() => {
     if (!animated || !isLoaded || !map || !AMap || coordinates.length < 2) return;
-    let cancelled = false;
 
-    AMap.plugin(["AMap.MoveAnimation"], () => {
-      if (cancelled) return;
-      const el = document.createElement("div");
-      el.style.cssText =
-        "width:10px;height:10px;border-radius:50%;background:#fff;border:2.5px solid #3b82f6;box-shadow:0 0 8px rgba(59,130,246,.7)";
-      const animMarker = new AMap.Marker({
-        position: coordinates[0],
-        content: el,
-        offset: new AMap.Pixel(-5, -5),
-      });
-      animMarker.setMap(map);
-      animMarkerRef.current = animMarker;
-      const path = coordinates.map((c) => new AMap.LngLat(c[0], c[1]));
-      animMarker.moveAlong(path, { speed: 200, autoRotation: false });
+    // Build a dense interpolated path so the marker moves smoothly
+    const LOOP_MS = 6000;
+    const STEP_MS = 50;
+    const totalSteps = LOOP_MS / STEP_MS;
+    const segs = coordinates.length - 1;
+    const stepsPerSeg = Math.ceil(totalSteps / segs);
+    const pathPoints: [number, number][] = [];
+    for (let i = 0; i < segs; i++) {
+      const [x1, y1] = coordinates[i];
+      const [x2, y2] = coordinates[i + 1];
+      for (let s = 0; s < stepsPerSeg; s++) {
+        const t = s / stepsPerSeg;
+        pathPoints.push([x1 + (x2 - x1) * t, y1 + (y2 - y1) * t]);
+      }
+    }
+    pathPoints.push(coordinates[coordinates.length - 1]);
+
+    const el = document.createElement("div");
+    el.style.cssText =
+      "width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid #3b82f6;box-shadow:0 0 0 4px rgba(59,130,246,.3),0 0 8px rgba(59,130,246,.6)";
+    const animMarker = new AMap.Marker({
+      position: coordinates[0],
+      content: el,
+      offset: new AMap.Pixel(-6, -6),
     });
+    animMarker.setMap(map);
+    animMarkerRef.current = animMarker;
+
+    let step = 0;
+    const intervalId = setInterval(() => {
+      if (animMarkerRef.current) {
+        animMarkerRef.current.setPosition(pathPoints[step % pathPoints.length]);
+      }
+      step++;
+    }, STEP_MS);
 
     return () => {
-      cancelled = true;
+      clearInterval(intervalId);
       if (animMarkerRef.current) {
-        animMarkerRef.current.stopMove?.();
         animMarkerRef.current.setMap(null);
         animMarkerRef.current = null;
       }

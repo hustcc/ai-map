@@ -7,4 +7,4 @@ export { TrailExample } from "./trail-example";
 export { FlyToExample } from "./flyto-example";
 export { ZonesExample } from "./zones-example";
 export { HeatmapHomeExample } from "./heatmap-home-example";
-
+export { LayersHomeExample } from "./layers-home-example";
