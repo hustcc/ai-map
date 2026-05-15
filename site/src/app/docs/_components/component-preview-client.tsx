@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { CopyButton } from "./copy-button";
 
@@ -18,6 +18,29 @@ export function ComponentPreviewClient({
   className,
 }: ComponentPreviewClientProps) {
   const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
+  const [isInViewport, setIsInViewport] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const node = previewRef.current;
+    if (!node) return;
+    if (!("IntersectionObserver" in window)) {
+      setIsInViewport(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setIsInViewport(entries.some((entry) => entry.isIntersecting));
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  const shouldRenderPreview = activeTab === "preview" && isInViewport;
 
   return (
     <div className="w-full rounded-lg border overflow-hidden">
@@ -50,18 +73,20 @@ export function ComponentPreviewClient({
         <CopyButton text={code} />
       </div>
 
-      <div className={cn("h-[400px] overflow-hidden relative", className)}>
-        {/* Both panels are always mounted and stacked with absolute positioning.
-            Using `invisible` (visibility:hidden) instead of `hidden` (display:none)
-            keeps the map container in the layout so AMap always knows its dimensions,
-            preventing NaN coordinate errors when switching tabs. */}
+      <div
+        ref={previewRef}
+        className={cn("h-[400px] overflow-hidden relative", className)}
+      >
+        {/* Keep fixed container dimensions while mounting preview lazily.
+            Unmounting the map when hidden/off-screen helps release resources
+            on constrained mobile browsers. */}
         <div
           className={cn(
             "absolute inset-0",
             activeTab !== "preview" && "invisible pointer-events-none"
           )}
         >
-          {children}
+          {shouldRenderPreview ? children : null}
         </div>
         <div
           className={cn(
