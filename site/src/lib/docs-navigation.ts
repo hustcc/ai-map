@@ -9,6 +9,8 @@ import {
   Wrench,
   Settings,
   Layers,
+  Pentagon,
+  Flame,
   LucideIcon,
 } from "lucide-react";
 
@@ -41,6 +43,9 @@ export const docsNavigation: NavGroup[] = [
       { title: "Popups", href: "/docs/popups", icon: MessageSquare },
       { title: "Routes", href: "/docs/routes", icon: Route },
       { title: "Clusters", href: "/docs/clusters", icon: Layers },
+      { title: "Shapes", href: "/docs/shapes", icon: Pentagon },
+      { title: "Heatmap", href: "/docs/heatmap", icon: Flame },
+      { title: "Layers", href: "/docs/layers", icon: Layers },
       { title: "Advanced", href: "/docs/advanced-usage", icon: Wrench },
     ],
   },

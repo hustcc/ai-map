@@ -10,3 +10,6 @@ export { default as ClusterExample } from "./cluster-example";
 export { AdvancedUsageExample } from "./advanced-usage-example";
 export { CustomLayerExample } from "./custom-layer-example";
 export { LayerMarkersExample } from "./layer-markers-example";
+export { PolygonExample } from "./polygon-example";
+export { HeatmapExample } from "./heatmap-example";
+export { LayersExample } from "./layers-example";

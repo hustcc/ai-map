@@ -1,6 +1,8 @@
 export {
   Map,
   useMap,
+  useMapEvent,
+  useMapBounds,
   MapMarker,
   MarkerContent,
   MarkerPopup,
@@ -10,6 +12,13 @@ export {
   MapControls,
   MapRoute,
   MapClusterLayer,
+  MapPolygon,
+  MapCircle,
+  MapHeatmap,
+  MapTrafficLayer,
+  MapSatelliteLayer,
 } from "./map";
 
-export type { MapRef } from "./map";
+export type { MapRef, HeatmapPoint, MapBounds } from "./map";
+
+export { wgs84ToGcj02, gcj02ToWgs84 } from "./utils";

@@ -9,6 +9,8 @@ import { ComponentPreview } from "../_components/component-preview";
 import { AdvancedUsageExample } from "../_components/examples/advanced-usage-example";
 import { CustomLayerExample } from "../_components/examples/custom-layer-example";
 import { LayerMarkersExample } from "../_components/examples/layer-markers-example";
+import { UseMapEventExample } from "../_components/examples/use-map-event-example";
+import { UseMapBoundsExample } from "../_components/examples/use-map-bounds-example";
 import { CodeBlock } from "../_components/code-block";
 import { getExampleSource } from "@/lib/get-example-source";
 import { Metadata } from "next";
@@ -66,15 +68,19 @@ export default function AdvancedPage() {
   const advancedSource = getExampleSource("advanced-usage-example.tsx");
   const customLayerSource = getExampleSource("custom-layer-example.tsx");
   const layerMarkersSource = getExampleSource("layer-markers-example.tsx");
+  const useMapEventSource = getExampleSource("use-map-event-example.tsx");
+  const useMapBoundsSource = getExampleSource("use-map-bounds-example.tsx");
 
   return (
     <DocsLayout
       title="Advanced"
       description="Access the underlying AMap JS API instance for advanced customization."
-      prev={{ title: "Clusters", href: "/docs/clusters" }}
+      prev={{ title: "Layers", href: "/docs/layers" }}
       toc={[
         { title: "Using a Ref", slug: "using-a-ref" },
         { title: "Using the Hook", slug: "using-the-hook" },
+        { title: "useMapEvent", slug: "usemapevent" },
+        { title: "useMapBounds", slug: "usemapbounds" },
         { title: "Example: Custom Controls", slug: "example-custom-controls" },
         {
           title: "Example: Custom GeoJSON Layer",
@@ -123,6 +129,35 @@ export default function AdvancedPage() {
         </p>
         <CodeBlock code={useMapCode} />
       </DocsSection>
+
+      <DocsSection title="useMapEvent">
+        <p>
+          <DocsCode>useMapEvent(event, handler)</DocsCode> is a convenience hook
+          that subscribes to any AMap map event and automatically unsubscribes
+          on unmount. It eliminates the boilerplate of writing{" "}
+          <DocsCode>useMap + useEffect + map.on/off</DocsCode> yourself. The
+          hook must be called from a component rendered inside{" "}
+          <DocsCode>Map</DocsCode>.
+        </p>
+      </DocsSection>
+
+      <ComponentPreview code={useMapEventSource}>
+        <UseMapEventExample />
+      </ComponentPreview>
+
+      <DocsSection title="useMapBounds">
+        <p>
+          <DocsCode>useMapBounds()</DocsCode> returns the current viewport
+          bounding box as <DocsCode>{"{ north, south, east, west }"}</DocsCode>{" "}
+          (or <DocsCode>null</DocsCode> before the map loads). The value updates
+          on every pan and zoom. Useful for fetching data within the visible
+          area.
+        </p>
+      </DocsSection>
+
+      <ComponentPreview code={useMapBoundsSource}>
+        <UseMapBoundsExample />
+      </ComponentPreview>
 
       <DocsSection title="Example: Custom Controls">
         <p>

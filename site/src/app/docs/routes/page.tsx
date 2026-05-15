@@ -7,6 +7,7 @@ import {
 import { ComponentPreview } from "../_components/component-preview";
 import { RouteExample } from "../_components/examples/route-example";
 import { OsrmRouteExample } from "../_components/examples/osrm-route-example";
+import { DashedRouteExample } from "../_components/examples/dashed-route-example";
 import { getExampleSource } from "@/lib/get-example-source";
 import { Metadata } from "next";
 
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
 export default function RoutesPage() {
   const routeSource = getExampleSource("route-example.tsx");
   const osrmRouteSource = getExampleSource("osrm-route-example.tsx");
+  const dashedRouteSource = getExampleSource("dashed-route-example.tsx");
 
   return (
     <DocsLayout
@@ -26,6 +28,7 @@ export default function RoutesPage() {
       next={{ title: "Clusters", href: "/docs/clusters" }}
       toc={[
         { title: "Basic Route", slug: "basic-route" },
+        { title: "Dashed Route", slug: "dashed-route" },
         { title: "Route Planning", slug: "route-planning" },
       ]}
     >
@@ -43,6 +46,16 @@ export default function RoutesPage() {
 
       <ComponentPreview code={routeSource}>
         <RouteExample />
+      </ComponentPreview>
+
+      <DocsSection title="Dashed Route">
+        <p>
+          Use <DocsCode>dashed</DocsCode> to render a dashed stroke style.
+        </p>
+      </DocsSection>
+
+      <ComponentPreview code={dashedRouteSource}>
+        <DashedRouteExample />
       </ComponentPreview>
 
       <DocsSection title="Route Planning">
