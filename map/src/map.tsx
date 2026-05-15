@@ -918,6 +918,7 @@ function MapRoute({
   useEffect(() => {
     if (!isLoaded || !map || !AMap || coordinates.length < 2) return;
 
+    // Create polyline fresh — also triggered when coordinates transitions from < 2 to >= 2
     const polyline = new AMap.Polyline({
       path: coordinates,
       strokeColor: color,
@@ -942,9 +943,9 @@ function MapRoute({
       polylineRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, map, AMap]);
+  }, [isLoaded, map, AMap, coordinates.length >= 2]);
 
-  // Animated marker moving along the route
+  // Animated marker moving along the route — restart whenever coordinates or animated flag changes
   useEffect(() => {
     if (!animated || !isLoaded || !map || !AMap || coordinates.length < 2) return;
     let cancelled = false;
@@ -974,7 +975,7 @@ function MapRoute({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, map, AMap, animated]);
+  }, [isLoaded, map, AMap, animated, coordinates]);
 
   useEffect(() => {
     if (!polylineRef.current) return;
@@ -1148,6 +1149,7 @@ function MapPolygon({
   useEffect(() => {
     if (!isLoaded || !map || !AMap || coordinates.length < 3) return;
 
+    // Create polygon — also triggered when coordinates transitions from < 3 to >= 3
     const polygon = new AMap.Polygon({
       path: coordinates,
       fillColor,
@@ -1176,7 +1178,7 @@ function MapPolygon({
       polygonRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, map, AMap]);
+  }, [isLoaded, map, AMap, coordinates.length >= 3]);
 
   useEffect(() => {
     if (!polygonRef.current || coordinates.length < 3) return;
@@ -1378,8 +1380,8 @@ function MapHeatmap({
 
   useEffect(() => {
     if (!heatmapRef.current) return;
-    heatmapRef.current.setOptions({ radius, opacity: [0, opacity] });
-  }, [radius, opacity]);
+    heatmapRef.current.setOptions({ radius, opacity: [0, opacity], ...(gradient ? { gradient } : {}) });
+  }, [radius, opacity, gradient]);
 
   return null;
 }

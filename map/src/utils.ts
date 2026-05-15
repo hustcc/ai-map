@@ -41,10 +41,21 @@ function transformLng(x: number, y: number): number {
 }
 
 /**
+ * Returns true if the coordinate is within the approximate GCJ-02 offset region
+ * (mainland China bounding box). Coordinates outside this region are passed through
+ * unchanged by wgs84ToGcj02 / gcj02ToWgs84.
+ */
+function isInChina(lng: number, lat: number): boolean {
+  return lng >= 72.004 && lng <= 137.8347 && lat >= 0.8293 && lat <= 55.8271;
+}
+
+/**
  * Convert WGS-84 coordinates (GPS) to GCJ-02 (AMap / China standard).
- * Returns `[lng, lat]` in GCJ-02.
+ * Returns `[lng, lat]` in GCJ-02. Coordinates outside mainland China are
+ * returned unchanged.
  */
 export function wgs84ToGcj02(lng: number, lat: number): [number, number] {
+  if (!isInChina(lng, lat)) return [lng, lat];
   let dLat = transformLat(lng - 105.0, lat - 35.0);
   let dLng = transformLng(lng - 105.0, lat - 35.0);
   const radLat = (lat / 180.0) * Math.PI;
@@ -61,8 +72,10 @@ export function wgs84ToGcj02(lng: number, lat: number): [number, number] {
 /**
  * Convert GCJ-02 coordinates (AMap / China standard) back to WGS-84 (GPS).
  * Uses an iterative approximation. Returns `[lng, lat]` in WGS-84.
+ * Coordinates outside mainland China are returned unchanged.
  */
 export function gcj02ToWgs84(lng: number, lat: number): [number, number] {
+  if (!isInChina(lng, lat)) return [lng, lat];
   let wgsLng = lng;
   let wgsLat = lat;
   for (let i = 0; i < 10; i++) {

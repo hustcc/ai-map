@@ -347,13 +347,13 @@ export default function ApiReferencePage() {
             },
             {
               name: "onDragStart",
-              type: "(lngLat: {lng, lat}) => void",
+              type: "(lngLat: { lng: number; lat: number }) => void",
               description:
                 "Callback when marker drag starts (requires draggable: true).",
             },
             {
               name: "onDragEnd",
-              type: "(lngLat: {lng, lat}) => void",
+              type: "(lngLat: { lng: number; lat: number }) => void",
               description:
                 "Callback when marker drag ends (requires draggable: true).",
             },
@@ -827,7 +827,7 @@ export default function ApiReferencePage() {
               name: "gradient",
               type: "Record<string, string>",
               description:
-                "Color gradient. Keys are 0-1 positions. Defaults to blue → red.",
+                'Color gradient. Keys are 0-1 positions. Defaults to blue → cyan → green → yellow → red.',
             },
             {
               name: "max",
