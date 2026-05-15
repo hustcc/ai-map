@@ -26,9 +26,24 @@ const anatomyCode = `<Map>
   <MapControls />
   <MapRoute coordinates={...} />
   <MapClusterLayer data={...} />
+  <MapPolygon coordinates={...} />
+  <MapCircle center={...} radius={...} />
+  <MapHeatmap data={...} />
+  <MapTrafficLayer />
+  <MapSatelliteLayer />
 </Map>`;
 
 const useMapCode = `const { map, isLoaded } = useMap();`;
+const useMapEventCode = `useMapEvent("click", (e) => console.log(e.lnglat));`;
+const useMapBoundsCode = `const bounds = useMapBounds();
+// { north, south, east, west } | null`;
+const coordCode = `import { wgs84ToGcj02, gcj02ToWgs84 } from "amapcn";
+
+// Convert GPS coordinates to AMap (GCJ-02)
+const [lng, lat] = wgs84ToGcj02(121.473, 31.230);
+
+// Convert back to WGS-84
+const [wgsLng, wgsLat] = gcj02ToWgs84(lng, lat);`;
 
 export default function ApiReferencePage() {
   return (
@@ -41,6 +56,9 @@ export default function ApiReferencePage() {
         { title: "Component Anatomy", slug: "component-anatomy" },
         { title: "Map", slug: "map" },
         { title: "useMap", slug: "usemap" },
+        { title: "useMapEvent", slug: "usemapevent" },
+        { title: "useMapBounds", slug: "usemapbounds" },
+        { title: "Coordinate Utilities", slug: "coordinate-utilities" },
         { title: "MapControls", slug: "mapcontrols" },
         { title: "MapMarker", slug: "mapmarker" },
         { title: "MarkerContent", slug: "markercontent" },
@@ -50,6 +68,11 @@ export default function ApiReferencePage() {
         { title: "MapPopup", slug: "mappopup" },
         { title: "MapRoute", slug: "maproute" },
         { title: "MapClusterLayer", slug: "mapclusterlayer" },
+        { title: "MapPolygon", slug: "mappolygon" },
+        { title: "MapCircle", slug: "mapcircle" },
+        { title: "MapHeatmap", slug: "mapheatmap" },
+        { title: "MapTrafficLayer", slug: "maptrafficlayer" },
+        { title: "MapSatelliteLayer", slug: "mapsatellitelayer" },
       ]}
     >
       <DocsNote>
@@ -82,30 +105,57 @@ export default function ApiReferencePage() {
           context to child components. Automatically handles theme switching
           between light and dark modes.
         </p>
-        <p>
-          Extends{" "}
-          <DocsLink
-            href="https://lbs.amap.com/api/jsapi-v2/summary/type-aliases/MapOptions/"
-            external
-          >
-            MapOptions
-          </DocsLink>{" "}
-          from AMap JS API (excluding <DocsCode>container</DocsCode> and{" "}
-          <DocsCode>style</DocsCode>).
-        </p>
         <DocsPropTable
           props={[
             {
               name: "children",
               type: "ReactNode",
               description:
-                "Child components (markers, popups, controls, routes).",
+                "Child components (markers, popups, controls, routes, etc.).",
             },
             {
               name: "styles",
               type: "{ light?: string; dark?: string }",
               description:
-                "Custom AMap style URLs for light and dark themes. Overrides the default AMap styles (e.g. amap://styles/normal).",
+                "Custom AMap style URLs for light and dark themes.",
+            },
+            {
+              name: "bounds",
+              type: "[[number, number], [number, number]]",
+              description:
+                "Fit the viewport to [SW corner, NE corner] bounds. Reacts to prop changes.",
+            },
+            {
+              name: "viewMode",
+              type: '"2D" | "3D"',
+              default: '"3D"',
+              description:
+                "Map projection mode. Only takes effect on initial mount.",
+            },
+            {
+              name: "onLoad",
+              type: "() => void",
+              description: "Called once when the map finishes loading.",
+            },
+            {
+              name: "onClick",
+              type: "(lngLat: { lng: number; lat: number }) => void",
+              description: "Called when the map canvas is clicked.",
+            },
+            {
+              name: "onMoveEnd",
+              type: "() => void",
+              description: "Called when the map finishes panning.",
+            },
+            {
+              name: "onZoomEnd",
+              type: "() => void",
+              description: "Called when the map finishes zooming.",
+            },
+            {
+              name: "onError",
+              type: "(error: Error) => void",
+              description: "Called when AMap JS API fails to load.",
             },
           ]}
         />
@@ -131,10 +181,67 @@ export default function ApiReferencePage() {
         </p>
       </DocsSection>
 
+      {/* useMapEvent */}
+      <DocsSection title="useMapEvent">
+        <p>
+          Subscribes to a map event and cleans up automatically on unmount. Must
+          be called inside a <DocsCode>Map</DocsCode> component.
+        </p>
+        <CodeBlock
+          code={useMapEventCode}
+          language="tsx"
+          showCopyButton={false}
+        />
+        <p>
+          Accepts any AMap map event name such as{" "}
+          <DocsCode>click</DocsCode>, <DocsCode>moveend</DocsCode>,{" "}
+          <DocsCode>zoomend</DocsCode>, <DocsCode>pitchchange</DocsCode>, etc.
+        </p>
+      </DocsSection>
+
+      {/* useMapBounds */}
+      <DocsSection title="useMapBounds">
+        <p>
+          Returns the current viewport bounds, updating automatically on every
+          pan/zoom. Must be called inside a <DocsCode>Map</DocsCode> component.
+        </p>
+        <CodeBlock
+          code={useMapBoundsCode}
+          language="tsx"
+          showCopyButton={false}
+        />
+      </DocsSection>
+
+      {/* Coordinate Utilities */}
+      <DocsSection title="Coordinate Utilities">
+        <p>
+          AMap uses the GCJ-02 coordinate system (China national standard).
+          GPS devices output WGS-84. Use these utilities to convert between
+          them.
+        </p>
+        <CodeBlock code={coordCode} language="tsx" showCopyButton={false} />
+        <DocsPropTable
+          props={[
+            {
+              name: "wgs84ToGcj02(lng, lat)",
+              type: "[number, number]",
+              description:
+                "Converts WGS-84 GPS coordinates to GCJ-02 (AMap). Returns [lng, lat].",
+            },
+            {
+              name: "gcj02ToWgs84(lng, lat)",
+              type: "[number, number]",
+              description:
+                "Converts GCJ-02 (AMap) coordinates back to WGS-84 GPS via iterative approximation. Returns [lng, lat].",
+            },
+          ]}
+        />
+      </DocsSection>
+
       {/* MapControls */}
       <DocsSection title="MapControls">
         <p>
-          Renders map control buttons (zoom, compass, locate, fullscreen). Must
+          Renders map control buttons (zoom, compass, locate, fullscreen, scale). Must
           be used inside <DocsCode>Map</DocsCode>.
         </p>
         <DocsPropTable
@@ -168,6 +275,12 @@ export default function ApiReferencePage() {
               type: "boolean",
               default: "false",
               description: "Show fullscreen toggle button.",
+            },
+            {
+              name: "showScale",
+              type: "boolean",
+              default: "false",
+              description: "Show a scale bar at the bottom-left of the map.",
             },
             {
               name: "className",
@@ -233,10 +346,22 @@ export default function ApiReferencePage() {
               description: "Callback when mouse leaves marker.",
             },
             {
+              name: "onDragStart",
+              type: "(lngLat: {lng, lat}) => void",
+              description:
+                "Callback when marker drag starts (requires draggable: true).",
+            },
+            {
               name: "onDragEnd",
               type: "(lngLat: {lng, lat}) => void",
               description:
                 "Callback when marker drag ends (requires draggable: true).",
+            },
+            {
+              name: "visible",
+              type: "boolean",
+              default: "true",
+              description: "Show or hide the marker.",
             },
           ]}
         />
@@ -473,6 +598,25 @@ export default function ApiReferencePage() {
               description: "Line opacity (0 to 1).",
             },
             {
+              name: "dashed",
+              type: "boolean",
+              default: "false",
+              description: "Render the route as a dashed line.",
+            },
+            {
+              name: "arrows",
+              type: "boolean",
+              default: "false",
+              description: "Show direction arrows along the route.",
+            },
+            {
+              name: "animated",
+              type: "boolean",
+              default: "false",
+              description:
+                "Animate a moving marker along the route using AMap.MoveAnimation.",
+            },
+            {
               name: "onClick",
               type: "() => void",
               description: "Callback when the route line is clicked.",
@@ -515,6 +659,231 @@ export default function ApiReferencePage() {
               name: "onPointClick",
               type: "(feature: GeoJSON.Feature, coordinates: [number, number]) => void",
               description: "Callback when an unclustered point is clicked.",
+            },
+          ]}
+        />
+      </DocsSection>
+
+      {/* MapPolygon */}
+      <DocsSection title="MapPolygon">
+        <p>
+          Draws a filled polygon. Must be used inside{" "}
+          <DocsCode>Map</DocsCode>. Requires at least 3 coordinate pairs. See{" "}
+          <DocsLink href="/docs/shapes">Shapes</DocsLink> for a full example.
+        </p>
+        <DocsPropTable
+          props={[
+            {
+              name: "coordinates",
+              type: "[number, number][]",
+              description: "Array of [lng, lat] pairs (min 3 points).",
+            },
+            {
+              name: "fillColor",
+              type: "string",
+              default: '"#3b82f6"',
+              description: "Fill color.",
+            },
+            {
+              name: "fillOpacity",
+              type: "number",
+              default: "0.3",
+              description: "Fill opacity (0 to 1).",
+            },
+            {
+              name: "strokeColor",
+              type: "string",
+              default: '"#3b82f6"',
+              description: "Stroke color.",
+            },
+            {
+              name: "strokeWidth",
+              type: "number",
+              default: "2",
+              description: "Stroke width in pixels.",
+            },
+            {
+              name: "strokeOpacity",
+              type: "number",
+              default: "0.8",
+              description: "Stroke opacity (0 to 1).",
+            },
+            {
+              name: "onClick",
+              type: "() => void",
+              description: "Click callback.",
+            },
+            {
+              name: "onMouseEnter",
+              type: "() => void",
+              description: "Mouse enter callback.",
+            },
+            {
+              name: "onMouseLeave",
+              type: "() => void",
+              description: "Mouse leave callback.",
+            },
+          ]}
+        />
+      </DocsSection>
+
+      {/* MapCircle */}
+      <DocsSection title="MapCircle">
+        <p>
+          Draws a circle with a given center and radius in meters. Must be used
+          inside <DocsCode>Map</DocsCode>. See{" "}
+          <DocsLink href="/docs/shapes">Shapes</DocsLink> for a full example.
+        </p>
+        <DocsPropTable
+          props={[
+            {
+              name: "center",
+              type: "[number, number]",
+              description: "Circle center [longitude, latitude] in GCJ-02.",
+            },
+            {
+              name: "radius",
+              type: "number",
+              description: "Radius in meters.",
+            },
+            {
+              name: "fillColor",
+              type: "string",
+              default: '"#3b82f6"',
+              description: "Fill color.",
+            },
+            {
+              name: "fillOpacity",
+              type: "number",
+              default: "0.2",
+              description: "Fill opacity (0 to 1).",
+            },
+            {
+              name: "strokeColor",
+              type: "string",
+              default: '"#3b82f6"',
+              description: "Stroke color.",
+            },
+            {
+              name: "strokeWidth",
+              type: "number",
+              default: "2",
+              description: "Stroke width in pixels.",
+            },
+            {
+              name: "strokeOpacity",
+              type: "number",
+              default: "0.8",
+              description: "Stroke opacity (0 to 1).",
+            },
+            {
+              name: "onClick",
+              type: "() => void",
+              description: "Click callback.",
+            },
+            {
+              name: "onMouseEnter",
+              type: "() => void",
+              description: "Mouse enter callback.",
+            },
+            {
+              name: "onMouseLeave",
+              type: "() => void",
+              description: "Mouse leave callback.",
+            },
+          ]}
+        />
+      </DocsSection>
+
+      {/* MapHeatmap */}
+      <DocsSection title="MapHeatmap">
+        <p>
+          Renders a density heatmap. Must be used inside{" "}
+          <DocsCode>Map</DocsCode>. Uses AMap&apos;s{" "}
+          <DocsCode>AMap.HeatMap</DocsCode> plugin. See{" "}
+          <DocsLink href="/docs/heatmap">Heatmap</DocsLink> for a full example.
+        </p>
+        <DocsPropTable
+          props={[
+            {
+              name: "data",
+              type: "HeatmapPoint[] | GeoJSON.FeatureCollection<Point>",
+              description:
+                "Array of { lng, lat, count? } or GeoJSON FeatureCollection<Point>.",
+            },
+            {
+              name: "radius",
+              type: "number",
+              default: "30",
+              description: "Point influence radius in pixels.",
+            },
+            {
+              name: "opacity",
+              type: "number",
+              default: "0.8",
+              description: "Maximum opacity (0 to 1).",
+            },
+            {
+              name: "gradient",
+              type: "Record<string, string>",
+              description:
+                "Color gradient. Keys are 0-1 positions. Defaults to blue → red.",
+            },
+            {
+              name: "max",
+              type: "number",
+              default: "100",
+              description: "Maximum count value for normalization.",
+            },
+          ]}
+        />
+      </DocsSection>
+
+      {/* MapTrafficLayer */}
+      <DocsSection title="MapTrafficLayer">
+        <p>
+          Overlays real-time traffic conditions. Must be used inside{" "}
+          <DocsCode>Map</DocsCode>. See{" "}
+          <DocsLink href="/docs/layers">Layers</DocsLink> for a full example.
+        </p>
+        <DocsPropTable
+          props={[
+            {
+              name: "visible",
+              type: "boolean",
+              default: "true",
+              description: "Show or hide the layer.",
+            },
+            {
+              name: "opacity",
+              type: "number",
+              default: "1",
+              description: "Layer opacity (0 to 1).",
+            },
+          ]}
+        />
+      </DocsSection>
+
+      {/* MapSatelliteLayer */}
+      <DocsSection title="MapSatelliteLayer">
+        <p>
+          Overlays satellite/aerial imagery. Must be used inside{" "}
+          <DocsCode>Map</DocsCode>. See{" "}
+          <DocsLink href="/docs/layers">Layers</DocsLink> for a full example.
+        </p>
+        <DocsPropTable
+          props={[
+            {
+              name: "visible",
+              type: "boolean",
+              default: "true",
+              description: "Show or hide the layer.",
+            },
+            {
+              name: "opacity",
+              type: "number",
+              default: "1",
+              description: "Layer opacity (0 to 1).",
             },
           ]}
         />

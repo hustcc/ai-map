@@ -71,7 +71,7 @@ export default function AdvancedPage() {
     <DocsLayout
       title="Advanced"
       description="Access the underlying AMap JS API instance for advanced customization."
-      prev={{ title: "Clusters", href: "/docs/clusters" }}
+      prev={{ title: "Layers", href: "/docs/layers" }}
       toc={[
         { title: "Using a Ref", slug: "using-a-ref" },
         { title: "Using the Hook", slug: "using-the-hook" },

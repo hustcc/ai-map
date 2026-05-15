@@ -22,6 +22,31 @@ export function BasicMap() {
 }
 ```
 
+## Map with Event Callbacks
+
+```tsx
+<Map
+  amapKey="YOUR_KEY"
+  center={[116.397, 39.909]}
+  zoom={13}
+  onLoad={() => console.log("map ready")}
+  onClick={({ lng, lat }) => console.log("clicked", lng, lat)}
+  onMoveEnd={() => console.log("moved")}
+  onZoomEnd={() => console.log("zoomed")}
+  onError={(err) => console.error("load failed", err)}
+/>
+```
+
+## Map with fitBounds
+
+```tsx
+// Automatically fit to a bounding box [[sw_lng, sw_lat], [ne_lng, ne_lat]]
+<Map
+  amapKey="YOUR_KEY"
+  bounds={[[116.3, 39.8], [116.5, 40.1]]}
+/>
+```
+
 ## Markers with Popups and Tooltips
 
 ```tsx
@@ -39,17 +64,29 @@ export function BasicMap() {
 </Map>
 ```
 
-## Draggable Marker
+## Draggable Marker with onDragStart + onDragEnd
 
 ```tsx
-<MapMarker longitude={116.397} latitude={39.909} draggable onDragEnd={({ lng, lat }) => {
-  console.log("New position:", lng, lat);
-}}>
+<MapMarker
+  longitude={116.397} latitude={39.909}
+  draggable
+  onDragStart={({ lng, lat }) => console.log("drag start", lng, lat)}
+  onDragEnd={({ lng, lat }) => console.log("new position", lng, lat)}
+>
   <MarkerContent />
 </MapMarker>
 ```
 
-## Route with Markers
+## Marker visibility toggle
+
+```tsx
+const [visible, setVisible] = useState(true);
+<MapMarker longitude={116.397} latitude={39.909} visible={visible}>
+  <MarkerContent />
+</MapMarker>
+```
+
+## Route with Popups and Tooltips
 
 ```tsx
 <Map amapKey="YOUR_KEY" center={[116.40, 39.91]} zoom={13}>
@@ -58,16 +95,129 @@ export function BasicMap() {
     color="#3b82f6"
     width={4}
   />
-  <MapMarker longitude={116.397} latitude={39.909}>
-    <MarkerContent>
-      <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">1</div>
-    </MarkerContent>
-  </MapMarker>
-  <MapMarker longitude={116.417} latitude={39.929}>
-    <MarkerContent>
-      <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">2</div>
-    </MarkerContent>
-  </MapMarker>
+</Map>
+```
+
+## Route with Dashed Style and Arrows
+
+```tsx
+<MapRoute
+  coordinates={[[116.397, 39.909], [116.407, 39.919], [116.417, 39.929]]}
+  color="#3b82f6"
+  dashed
+  arrows
+/>
+```
+
+## Route with Animation
+
+```tsx
+<MapRoute
+  coordinates={[[116.397, 39.909], [116.407, 39.919], [116.417, 39.929]]}
+  color="#3b82f6"
+  animated
+/>
+```
+
+## Scale Bar in Controls
+
+```tsx
+<MapControls showZoom showScale position="bottom-right" />
+```
+
+## Polygon (boundary / district)
+
+```tsx
+import { MapPolygon } from "amapcn";
+
+<Map amapKey="YOUR_KEY" center={[116.39, 39.91]} zoom={13}>
+  <MapPolygon
+    coordinates={[
+      [116.370, 39.930],
+      [116.420, 39.930],
+      [116.420, 39.890],
+      [116.370, 39.890],
+    ]}
+    fillColor="#3b82f6"
+    fillOpacity={0.2}
+    strokeColor="#3b82f6"
+    strokeWidth={2}
+    onClick={() => console.log("polygon clicked")}
+  />
+</Map>
+```
+
+## Circle (geofence / service radius)
+
+```tsx
+import { MapCircle } from "amapcn";
+
+<Map amapKey="YOUR_KEY" center={[116.397, 39.909]} zoom={14}>
+  <MapCircle
+    center={[116.397, 39.909]}
+    radius={1000}
+    fillColor="#22c55e"
+    fillOpacity={0.15}
+    strokeColor="#22c55e"
+    strokeWidth={2}
+    onClick={() => console.log("circle clicked")}
+  />
+</Map>
+```
+
+## Heatmap
+
+```tsx
+import { MapHeatmap } from "amapcn";
+
+const data = [
+  { lng: 116.397, lat: 39.909, count: 90 },
+  { lng: 116.407, lat: 39.919, count: 60 },
+  { lng: 116.417, lat: 39.929, count: 30 },
+];
+
+<Map amapKey="YOUR_KEY" center={[116.397, 39.909]} zoom={12}>
+  <MapHeatmap data={data} radius={30} opacity={0.8} max={100} />
+</Map>
+```
+
+## Heatmap from GeoJSON
+
+```tsx
+<MapHeatmap
+  data={{
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [116.397, 39.909] },
+        properties: { count: 80 },
+      },
+    ],
+  }}
+/>
+```
+
+## Traffic Layer
+
+```tsx
+import { MapTrafficLayer } from "amapcn";
+
+const [showTraffic, setShowTraffic] = useState(true);
+
+<Map amapKey="YOUR_KEY" center={[116.397, 39.909]} zoom={12}>
+  <MapTrafficLayer visible={showTraffic} />
+</Map>
+```
+
+## Satellite Layer
+
+```tsx
+import { MapSatelliteLayer } from "amapcn";
+
+<Map amapKey="YOUR_KEY" center={[116.397, 39.909]} zoom={12}>
+  <MapSatelliteLayer visible />
+  <MapTrafficLayer visible />  {/* can combine both */}
 </Map>
 ```
 
@@ -105,6 +255,48 @@ function MapWith3D() {
 <Map amapKey="YOUR_KEY" center={[116.397, 39.909]} zoom={13}>
   <MapWith3D />
 </Map>
+```
+
+## useMapEvent Hook
+
+```tsx
+function ClickLogger() {
+  useMapEvent("click", (e) => {
+    console.log("clicked at", e.lnglat.getLng(), e.lnglat.getLat());
+  });
+  return null;
+}
+
+<Map amapKey="YOUR_KEY" center={[116.397, 39.909]} zoom={13}>
+  <ClickLogger />
+</Map>
+```
+
+## useMapBounds Hook
+
+```tsx
+function BoundsDisplay() {
+  const bounds = useMapBounds();
+  if (!bounds) return null;
+  return (
+    <div className="absolute top-3 left-3 z-10 bg-background/90 backdrop-blur px-3 py-2 text-xs font-mono border rounded-md">
+      N: {bounds.north.toFixed(4)} S: {bounds.south.toFixed(4)}<br />
+      E: {bounds.east.toFixed(4)} W: {bounds.west.toFixed(4)}
+    </div>
+  );
+}
+```
+
+## Coordinate Conversion
+
+```tsx
+import { wgs84ToGcj02, gcj02ToWgs84 } from "amapcn";
+
+// Convert GPS coordinates to AMap (GCJ-02)
+const [lng, lat] = wgs84ToGcj02(121.473, 31.230);
+
+// Convert back to WGS-84
+const [wgsLng, wgsLat] = gcj02ToWgs84(lng, lat);
 ```
 
 ## Map Ref — Fly To
@@ -172,3 +364,4 @@ function ManyMarkers({ points }: { points: { lng: number; lat: number; name: str
   return null;
 }
 ```
+
