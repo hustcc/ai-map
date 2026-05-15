@@ -21,7 +21,7 @@ const densityData = [
 
 export function HeatmapHomeExample() {
   return (
-    <ExampleCard label="Heatmap" className="aspect-square" delay="delay-900">
+    <ExampleCard label="" className="aspect-square" delay="delay-900">
       <div className="absolute top-3 left-3 z-10 bg-background/95 backdrop-blur-md rounded-lg px-3 py-2 border border-border/50 shadow-lg">
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">
           Activity density

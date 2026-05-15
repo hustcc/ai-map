@@ -25,7 +25,7 @@ export function ZonesExample() {
   const [hover, setHover] = useState<string | null>(null);
 
   return (
-    <ExampleCard label="Zones" className="aspect-square" delay="delay-800">
+    <ExampleCard label="" className="aspect-square" delay="delay-800">
       <div className="absolute top-3 left-3 z-10 bg-background/95 backdrop-blur-md rounded-lg px-3 py-2 border border-border/50 shadow-lg space-y-1.5">
         <div className="flex items-center gap-1.5">
           <Shield className="size-3 text-blue-500" />

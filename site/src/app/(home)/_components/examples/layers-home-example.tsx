@@ -10,7 +10,7 @@ export function LayersHomeExample() {
   const [mode, setMode] = useState<LayerMode>("satellite");
 
   return (
-    <ExampleCard label="Layers" className="aspect-[2/1]" delay="delay-1000">
+    <ExampleCard label="" className="aspect-[2/1]" delay="delay-1000">
       <div className="absolute top-3 left-3 z-10 bg-background/95 backdrop-blur-md rounded-lg px-3 py-2 border border-border/50 shadow-lg">
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">
           Tile layers

@@ -910,6 +910,7 @@ function MapRoute({
   const { map, AMap, isLoaded } = useMap();
   const polylineRef = useRef<AMapInstance>(null);
   const animMarkerRef = useRef<AMapInstance>(null);
+  const arrowMarkersRef = useRef<AMapInstance[]>([]);
 
   // Keep latest onClick in a ref to avoid stale closures
   const onClickRef = useRef(onClick);
@@ -926,7 +927,6 @@ function MapRoute({
       strokeOpacity: opacity,
       lineJoin: "round",
       lineCap: "round",
-      showDir: arrows,
       strokeStyle: dashed ? "dashed" : "solid",
       strokeDasharray: dashed ? [10, 5] : undefined,
     });
@@ -1011,11 +1011,54 @@ function MapRoute({
       strokeColor: color,
       strokeWeight: width,
       strokeOpacity: opacity,
-      showDir: arrows,
       strokeStyle: dashed ? "dashed" : "solid",
       strokeDasharray: dashed ? [10, 5] : undefined,
     });
   }, [color, width, opacity, arrows, dashed]);
+
+  // Direction arrow markers rendered as SVG triangles at each segment midpoint
+  useEffect(() => {
+    // Clean up previous markers first
+    arrowMarkersRef.current.forEach((m) => m.setMap(null));
+    arrowMarkersRef.current = [];
+
+    if (!arrows || !isLoaded || !map || !AMap || coordinates.length < 2) return;
+
+    for (let i = 0; i < coordinates.length - 1; i++) {
+      const [x1, y1] = coordinates[i];
+      const [x2, y2] = coordinates[i + 1];
+      const mx = (x1 + x2) / 2;
+      const my = (y1 + y2) / 2;
+      // Bearing from north, clockwise (matches CSS rotate direction)
+      const angleDeg = Math.atan2(x2 - x1, y2 - y1) * (180 / Math.PI);
+      const el = document.createElement("div");
+      const svgNS = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(svgNS, "svg");
+      svg.setAttribute("width", "12");
+      svg.setAttribute("height", "12");
+      svg.setAttribute("viewBox", "0 0 12 12");
+      const poly = document.createElementNS(svgNS, "polygon");
+      poly.setAttribute("transform", `rotate(${angleDeg},6,6)`);
+      poly.setAttribute("points", "6,1 11,11 6,8 1,11");
+      poly.setAttribute("fill", color);
+      poly.setAttribute("opacity", String(opacity));
+      svg.appendChild(poly);
+      el.appendChild(svg);
+      const marker = new AMap.Marker({
+        position: [mx, my],
+        content: el,
+        offset: new AMap.Pixel(-6, -6),
+      });
+      marker.setMap(map);
+      arrowMarkersRef.current.push(marker);
+    }
+
+    return () => {
+      arrowMarkersRef.current.forEach((m) => m.setMap(null));
+      arrowMarkersRef.current = [];
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, map, AMap, arrows, coordinates, color, opacity]);
 
   return null;
 }
