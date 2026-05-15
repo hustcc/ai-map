@@ -18,30 +18,29 @@ export function ComponentPreviewClient({
   className,
 }: ComponentPreviewClientProps) {
   const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
-  const [shouldRenderPreview, setShouldRenderPreview] = useState(false);
+  const [isInViewport, setIsInViewport] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const node = previewRef.current;
-    if (!node || shouldRenderPreview) return;
+    if (!node) return;
     if (!("IntersectionObserver" in window)) {
-      setShouldRenderPreview(true);
+      setIsInViewport(true);
       return;
     }
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setShouldRenderPreview(true);
-          observer.disconnect();
-        }
+        setIsInViewport(entries.some((entry) => entry.isIntersecting));
       },
       { rootMargin: "200px" }
     );
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [shouldRenderPreview]);
+  }, []);
+
+  const shouldRenderPreview = activeTab === "preview" && isInViewport;
 
   return (
     <div className="w-full rounded-lg border overflow-hidden">
@@ -78,10 +77,9 @@ export function ComponentPreviewClient({
         ref={previewRef}
         className={cn("h-[400px] overflow-hidden relative", className)}
       >
-        {/* Both panels are always mounted and stacked with absolute positioning.
-            Using `invisible` (visibility:hidden) instead of `hidden` (display:none)
-            keeps the map container in the layout so AMap always knows its dimensions,
-            preventing NaN coordinate errors when switching tabs. */}
+        {/* Keep fixed container dimensions while mounting preview lazily.
+            Unmounting the map when hidden/off-screen helps release resources
+            on constrained mobile browsers. */}
         <div
           className={cn(
             "absolute inset-0",
