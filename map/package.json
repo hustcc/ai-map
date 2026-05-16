@@ -4,6 +4,7 @@
   "description": "An AMap (高德地图)-powered map component library for React, styled with Tailwind CSS.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
+  "unpkg": "./dist/amapcn.umd.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
@@ -22,7 +23,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && vite build --config vite.umd.config.ts",
     "dev": "tsup --watch"
   },
   "peerDependencies": {
@@ -40,10 +41,12 @@
     "@types/geojson": "^7946.0.16",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tsup": "^8.4.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "^6.4.2"
   },
   "repository": "git@github.com:hustcc/amapcn.git",
   "license": "MIT",

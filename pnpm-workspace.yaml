@@ -1,4 +1,10 @@
 packages:
-  - "map"
-  - "cn"
-  - "site"
+  - map
+  - cn
+  - site
+
+onlyBuiltDependencies:
+  - esbuild
+  - msw
+  - sharp
+  - unrs-resolver
