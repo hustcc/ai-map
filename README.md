@@ -2,7 +2,7 @@
 
 <h1 align="center">🗺️ 面向中国的 amapcn 🇨🇳</h1>
 
-让中国地图开发更简单。免费开源、开箱即用、可自定义的 React 地图组件。
+让中国地图开发合规且更简单。免费开源、开箱即用、可自定义的 React 地图组件。
 
 <p align="center">
   <a href="https://www.npmjs.com/package/amapcn"><img alt="npm version" src="https://img.shields.io/npm/v/amapcn.svg" /></a>
